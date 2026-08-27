@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bambu Studio 入门：从模型到打印</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: #f8fafc;
+    color: #334155;
+    line-height: 1.8;
+    font-size: 15px;
+  }
+  a { color: #2563eb; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "SF Mono", Monaco, monospace;
+    font-size: 0.9em;
+    color: #0f172a;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .topbar-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  .menu-toggle {
+    display: block;
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+  .menu-toggle:hover { background: #f1f5f9; }
+  @media(min-width: 1024px) { .menu-toggle { display: none; } }
+
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    gap: 32px;
+  }
+
+  .sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    display: none;
+  }
+  .sidebar.open { display: block; }
+  @media(min-width: 1024px) {
+    .sidebar { display: block !important; position: sticky; top: 84px; height: calc(100vh - 100px); overflow-y: auto; }
+  }
+  @media(max-width: 1023px) {
+    .sidebar {
+      position: fixed;
+      top: 60px; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.98);
+      z-index: 99;
+      width: 100%;
+      padding: 20px;
+      overflow-y: auto;
+    }
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #475569;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    transition: all 0.2s;
+    margin-bottom: 2px;
+  }
+  .nav-item:hover { background: #f1f5f9; color: #0f172a; }
+  .nav-item.active { background: #2563eb; color: #fff; }
+  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .nav-group-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 16px 14px 8px;
+  }
+
+  .main {
+    flex: 1;
+    min-width: 0;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+    padding: 32px 28px;
+  }
+  @media(min-width: 640px) { .main { padding: 48px 40px; } }
+
+  .section { margin-bottom: 56px; scroll-margin-top: 20px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #dbeafe;
+  }
+  .section-icon {
+    width: 40px; height: 40px;
+    border-radius: 8px;
+    background: #eff6ff;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .section-icon svg { width: 22px; height: 22px; color: #2563eb; }
+  .section-title { font-size: 24px; font-weight: 700; color: #0f172a; }
+  .section-desc { color: #64748b; font-size: 15px; margin-top: -16px; margin-bottom: 24px; }
+
+  .concept-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 16px 0;
+  }
+  .concept-card h4 {
+    font-size: 17px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .concept-card p { margin-bottom: 10px; color: #475569; }
+  .concept-card p:last-child { margin-bottom: 0; }
+
+  .compare-table { overflow-x: auto; margin: 16px 0; }
+  .compare-table table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .compare-table th, .compare-table td { border: 1px solid #e2e8f0; padding: 12px 16px; text-align: left; }
+  .compare-table th { background: #f1f5f9; font-weight: 600; color: #0f172a; }
+  .compare-table td { color: #475569; }
+  .compare-table tr:nth-child(even) td { background: #f8fafc; }
+
+  .box { border-radius: 10px; padding: 16px 20px; margin: 14px 0; font-size: 14px; }
+  .box-title { font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .box p { margin-bottom: 6px; }
+  .box p:last-child { margin-bottom: 0; }
+  .box-info    { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+  .box-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+  .box-tip     { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+  .box-warning { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+  .box-purple  { background: #f5f3ff; border: 1px solid #ddd6fe; color: #5b21b6; }
+
+  .step { margin-bottom: 28px; }
+  .step-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 12px;
+  }
+  .step-num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: #2563eb;
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px;
+    flex-shrink: 0;
+  }
+  .step-title { font-size: 17px; font-weight: 600; color: #1e293b; }
+  .step-body { padding-left: 44px; }
+  .step-body p { margin-bottom: 10px; }
+
+  .code-wrap { position: relative; margin: 12px 0; }
+  pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 16px 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: "SF Mono", Monaco, monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    position: relative;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #334155;
+    color: #cbd5e1;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .code-wrap:hover .copy-btn { opacity: 1; }
+  .copy-btn:hover { background: #475569; }
+  .copy-btn.copied { background: #059669; color: #fff; }
+
+  .flow-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 10px;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .flow-item {
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    color: #334155;
+  }
+  .flow-arrow { color: #94a3b8; font-size: 18px; }
+
+  .flow-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 10px;
+    margin: 16px 0;
+  }
+  .flow-v-item {
+    background: #fff;
+    border: 2px solid #cbd5e1;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #334155;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  .flow-v-arrow { color: #94a3b8; font-size: 20px; }
+  .flow-v-note {
+    font-size: 13px;
+    color: #64748b;
+    text-align: center;
+    max-width: 400px;
+  }
+
+  ul.checklist { list-style: none; padding: 0; }
+  ul.checklist li {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0;
+  }
+  ul.checklist svg { width: 20px; height: 20px; color: #22c55e; flex-shrink: 0; margin-top: 2px; }
+
+  .param-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin: 16px 0;
+  }
+  @media(min-width: 640px) { .param-grid { grid-template-columns: 1fr 1fr; } }
+  .param-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 16px;
+    background: #fff;
+  }
+  .param-card h5 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .param-card p { font-size: 14px; color: #475569; }
+  .param-value {
+    display: inline-block;
+    background: #eff6ff;
+    color: #2563eb;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 13px;
+    margin-top: 4px;
+  }
+
+  .footer { text-align: center; font-size: 13px; color: #94a3b8; margin-top: 48px; padding-top: 24px; border-top: 1px solid #e2e8f0; }
+
+  @media print {
+    .topbar, .sidebar, .menu-toggle, .copy-btn { display: none !important; }
+    .main { box-shadow: none; border: none; padding: 0; }
+    body { background: #fff; }
+    .section { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      Bambu Studio 入门
+      <span style="font-size:14px;color:#94a3b8;font-weight:400;">| 从模型到打印</span>
+    </div>
+    <button class="menu-toggle" onclick="toggleMenu()" id="menuBtn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="container">
+  <nav class="sidebar" id="sidebar">
+    <div style="position:sticky;top:0;">
+      <div class="nav-group-title">科普</div>
+      <button class="nav-item active" onclick="scrollToSec('why-slice',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        为什么要切片
+      </button>
+      <button class="nav-item" onclick="scrollToSec('what-is-gcode',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+        G-code 是什么
+      </button>
+      <button class="nav-item" onclick="scrollToSec('bambu-intro',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
+        Bambu Studio
+      </button>
+      <button class="nav-item" onclick="scrollToSec('params',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 1 .73-2.73l.22-.38a2 2 0 0 0-.73-2.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        切片参数科普
+      </button>
+      <button class="nav-item" onclick="scrollToSec('workflow',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 2.1l4 1.9-4 1.9"/><path d="M3 4.1l4 1.9-4 1.9"/><path d="M21 4H11"/><path d="M13 20H3"/><path d="M7 10l4 1.9-4 1.9"/><path d="M17 14v-4"/><path d="M17 14h-4"/></svg>
+        完整流程
+      </button>
+      <button class="nav-item" onclick="scrollToSec('constraints',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        制造约束
+      </button>
+      <button class="nav-item" onclick="scrollToSec('troubleshoot',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+        常见问题
+      </button>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- ==================== 为什么要切片 ==================== -->
+    <section class="section" id="why-slice">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <h2 class="section-title">模型有了，为什么还不能直接打印？</h2>
+      </div>
+      <p class="section-desc">上午 AI 生成了漂亮的 3D 模型，但 3D 打印机看不懂它。</p>
+
+      <div class="concept-card">
+        <h4>🧠 3D 打印机只懂一种语言</h4>
+        <p>你手里的 STL 文件（三角网格）描述的是"这个零件长什么样"。但 3D 打印机不关心"样子"，它只关心一件事：</p>
+        <div style="background:#0f172a;color:#e2e8f0;padding:16px 20px;border-radius:8px;font-family:monospace;font-size:14px;line-height:1.8;margin:12px 0;text-align:center;">
+          <p>"喷头现在走到哪？挤多少料？温度多少？"</p>
+        </div>
+        <p>这种"一步一步告诉机器怎么做"的指令，就是 <strong>G-code</strong>。</p>
+      </div>
+
+      <div class="concept-card">
+        <h4>🔪 切片 = 翻译官</h4>
+        <p>切片软件（Slicer）的工作，就是把 3D 模型翻译成 G-code。类比一下：</p>
+        <div class="compare-table">
+          <table>
+            <tr><th>场景</th><th>输入</th><th>翻译工具</th><th>输出</th></tr>
+            <tr><td>编程</td><td>C++ 代码</td><td>编译器</td><td>机器码（0101）</td></tr>
+            <tr><td>3D 打印</td><td>STL 模型</td><td>切片软件</td><td>G-code（喷头指令）</td></tr>
+          </table>
+        </div>
+        <p>切片软件要决定的事情非常多——不只是"翻译"，还要做大量<strong>制造决策</strong>。</p>
+      </div>
+
+      <div class="concept-card">
+        <h4>🤔 切片软件要决定什么？</h4>
+        <div class="flow-box">
+          <span class="flow-item">STL 模型</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-item" style="background:#fef2f2;border-color:#fca5a5;">层厚多少？</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-item" style="background:#fffbeb;border-color:#fcd34d;">内部填充多少？</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-item" style="background:#f0fdf4;border-color:#86efac;">悬空要不要支撑？</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-item" style="background:#eff6ff;border-color:#93c5fd;">外壳打几层？</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-item">G-code</span>
+        </div>
+        <p>每一个决策都影响最终零件的<strong>强度、精度、时间和耗材</strong>。</p>
+      </div>
+    </section>
+
+    <!-- ==================== G-code 是什么 ==================== -->
+    <section class="section" id="what-is-gcode">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <h2 class="section-title">G-code：3D 打印机的"机器语言"</h2>
+      </div>
+      <p class="section-desc">打开 G-code 文件，你会看到打印机执行的每一行指令。</p>
+
+      <div class="concept-card">
+        <h4>📄 G-code 长什么样？</h4>
+        <div class="code-wrap">
+          <pre><code>; 这是注释，打印机不会执行
+G28          ; 归零——喷头回到原点
+M104 S200    ; 设置喷头温度 200°C
+M140 S60     ; 设置热床温度 60°C
+G1 X50 Y30   ; 喷头移动到坐标 (50, 30)
+G1 X60 Y30 E1.5 F1500
+             ; 移动到 (60,30)，挤出 1.5mm 料，速度 1500mm/min
+G1 Z0.2      ; 喷头上升到 0.2mm（第一层高度）</code></pre>
+          <button class="copy-btn" onclick="copyCode(this)">复制</button>
+        </div>
+        <p>每一层（比如 0.2mm 厚）都有几百到几千行这样的指令。一个普通零件的 G-code 文件可能有<strong>几万行</strong>。</p>
+      </div>
+
+      <div class="concept-card">
+        <h4>🔑 关键指令速查</h4>
+        <div class="compare-table">
+          <table>
+            <tr><th>指令</th><th>含义</th><th>类比</th></tr>
+            <tr><td><code>G1</code></td><td>直线移动（同时可以挤出料）</td><td>"走到那，边走边画"</td></tr>
+            <tr><td><code>G28</code></td><td>归零（回原点）</td><td>"回到起点"</td></tr>
+            <tr><td><code>G1 Z0.2</code></td><td>Z 轴上升到 0.2mm</td><td>"换一层"</td></tr>
+            <tr><td><code>M104 S200</code></td><td>喷头加热到 200°C</td><td>"预热笔"</td></tr>
+            <tr><td><code>M140 S60</code></td><td>热床加热到 60°C</td><td>"预热纸"</td></tr>
+            <tr><td><code>E1.5</code></td><td>挤出 1.5mm 长的料</td><td>"挤出颜料"</td></tr>
+            <tr><td><code>F1500</code></td><td>移动速度 1500mm/min</td><td>"走快点"</td></tr>
+          </table>
+        </div>
+        <p>切片软件就是自动生成这些指令的"程序员"。你不需要手写 G-code，但理解它有助于排查打印问题。</p>
+      </div>
+    </section>
+
+    <!-- ==================== Bambu Studio ==================== -->
+    <section class="section" id="bambu-intro">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
+        </div>
+        <h2 class="section-title">Bambu Studio：你的切片工作台</h2>
+      </div>
+      <p class="section-desc">Bambu Studio 是 Bambu Lab 推出的免费切片软件，基于开源 PrusaSlicer。</p>
+
+      <div class="concept-card">
+        <h4>🖥️ 它能做什么？</h4>
+        <ul class="checklist">
+          <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>导入 STL / STEP / 3MF 模型</span></li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>自动检测模型缺陷并修复</span></li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>一键切片生成 G-code</span></li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>逐层预览打印过程</span></li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>自动为悬空部分生成支撑</span></li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>估算打印时间和耗材用量</span></li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>局域网发送到打印机（或导出 SD 卡）</span></li>
+        </ul>
+      </div>
+
+      <div class="concept-card">
+        <h4>📥 下载与安装</h4>
+        <p>Bambu Studio 完全免费，支持 Windows / macOS / Linux：</p>
+        <div style="text-align:center;margin:16px 0;">
+          <a href="https://bambulab.com/en/download/studio" target="_blank" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;font-weight:600;text-decoration:none;">前往官网下载 Bambu Studio</a>
+        </div>
+        <div class="box box-tip">
+          <div class="box-title">💡 没有 Bambu 打印机也能用</div>
+          <p>选择"虚拟打印机"或配置其他品牌（Prusa、Ender 等），同样可以预览切片结果、导出 G-code。只是不能一键发送。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 切片参数 ==================== -->
+    <section class="section" id="params">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 1 .73-2.73l.22-.38a2 2 0 0 0-.73-2.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <h2 class="section-title">切片参数：每个选项都在决定什么？</h2>
+      </div>
+      <p class="section-desc">切片软件右侧有一堆参数，它们不是随便填的——每个都影响最终零件。</p>
+
+      <div class="param-grid">
+        <div class="param-card">
+          <h5>📏 层厚（Layer Height）</h5>
+          <p>每一层塑料的厚度。</p>
+          <span class="param-value">推荐：0.2mm</span>
+          <p style="margin-top:8px;font-size:13px;color:#64748b;">0.1mm = 精细但慢（2 倍时间）<br>0.3mm = 快速但粗糙</p>
+        </div>
+        <div class="param-card">
+          <h5>🧱 壁厚（Wall Thickness）</h5>
+          <p>外壳打几层。 nozzle 0.4mm 宽，3 层 = 1.2mm 厚。</p>
+          <span class="param-value">推荐：3 层</span>
+          <p style="margin-top:8px;font-size:13px;color:#64748b;">太薄 = 一捏就瘪<br>太厚 = 浪费料、时间翻倍</p>
+        </div>
+        <div class="param-card">
+          <h5>🐝 填充密度（Infill）</h5>
+          <p>内部不是实心的，而是蜂窝/网格结构。</p>
+          <span class="param-value">推荐：20%</span>
+          <p style="margin-top:8px;font-size:13px;color:#64748b;">0% = 完全空心（花瓶）<br>100% = 实心（重、慢、贵）<br>20% 是强度与重量的最佳平衡</p>
+        </div>
+        <div class="param-card">
+          <h5>🌡️ 温度（Temperature）</h5>
+          <p>喷头熔化塑料的温度。</p>
+          <span class="param-value">PLA：200°C / 热床 60°C</span>
+          <p style="margin-top:8px;font-size:13px;color:#64748b;">太低 = 料挤不出来<br>太高 = 拉丝、变形</p>
+        </div>
+        <div class="param-card">
+          <h5>🦶 支撑（Support）</h5>
+          <p>悬空部分（>45°）需要支架托住，否则塑料会塌。</p>
+          <span class="param-value">推荐：自动（45°阈值）</span>
+          <p style="margin-top:8px;font-size:13px;color:#64748b;">支撑打完后要手动拆掉，会在表面留痕迹</p>
+        </div>
+        <div class="param-card">
+          <h5>⚡ 速度（Speed）</h5>
+          <p>喷头移动速度。</p>
+          <span class="param-value">推荐：默认即可</span>
+          <p style="margin-top:8px;font-size:13px;color:#64748b;">太快 = 精度下降、层间粘合差<br>太慢 = 时间太长</p>
+        </div>
+      </div>
+
+      <div class="box box-info">
+        <div class="box-title">🎯 一句话记忆</div>
+        <p><strong>层厚</strong>决定表面光不光滑，<strong>壁厚</strong>决定外壳硬不硬，<strong>填充</strong>决定内部实不实，<strong>支撑</strong>决定悬空掉不掉，<strong>温度</strong>决定料粘不粘得牢。</p>
+      </div>
+    </section>
+
+    <!-- ==================== 完整流程 ==================== -->
+    <section class="section" id="workflow">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 2.1l4 1.9-4 1.9"/><path d="M3 4.1l4 1.9-4 1.9"/><path d="M21 4H11"/><path d="M13 20H3"/><path d="M7 10l4 1.9-4 1.9"/><path d="M17 14v-4"/><path d="M17 14h-4"/></svg>
+        </div>
+        <h2 class="section-title">完整流程：从 STL 到 G-code</h2>
+      </div>
+      <p class="section-desc">以下是用 Bambu Studio 处理 AI 生成零件的标准流程。</p>
+
+      <div class="flow-vertical">
+        <div class="flow-v-item" style="border-color:#2563eb;background:#eff6ff;">
+          <strong>Step 1：导入模型</strong>
+          <p style="font-size:13px;color:#64748b;margin-top:4px;font-weight:normal;">文件 → 导入 → 选择 .stl</p>
+        </div>
+        <div class="flow-v-arrow">↓</div>
+        <div class="flow-v-note">模型出现在 3D 视图中，可能方向不对</div>
+
+        <div class="flow-v-item" style="border-color:#f59e0b;background:#fffbeb;">
+          <strong>Step 2：摆放与旋转</strong>
+          <p style="font-size:13px;color:#64748b;margin-top:4px;font-weight:normal;">最大平面朝下，减少支撑</p>
+        </div>
+        <div class="flow-v-arrow">↓</div>
+        <div class="flow-v-note">选中模型 → 点击旋转工具 → 调整角度</div>
+
+        <div class="flow-v-item" style="border-color:#ef4444;background:#fef2f2;">
+          <strong>Step 3：检查与修复</strong>
+          <p style="font-size:13px;color:#64748b;margin-top:4px;font-weight:normal;">点击"修复"按钮，检查破面/非流形</p>
+        </div>
+        <div class="flow-v-arrow">↓</div>
+        <div class="flow-v-note">如果 AI 生成的模型有缺陷，这里会标红。需要回炉修正 Prompt。</div>
+
+        <div class="flow-v-item" style="border-color:#8b5cf6;background:#f5f3ff;">
+          <strong>Step 4：设置参数</strong>
+          <p style="font-size:13px;color:#64748b;margin-top:4px;font-weight:normal;">层厚 0.2mm / 填充 20% / 壁厚 3 层 / 支撑自动</p>
+        </div>
+        <div class="flow-v-arrow">↓</div>
+        <div class="flow-v-note">右侧参数面板，逐项确认</div>
+
+        <div class="flow-v-item" style="border-color:#10b981;background:#f0fdf4;">
+          <strong>Step 5：切片</strong>
+          <p style="font-size:13px;color:#64748b;margin-top:4px;font-weight:normal;">点击"切片"按钮 或 Ctrl+G</p>
+        </div>
+        <div class="flow-v-arrow">↓</div>
+        <div class="flow-v-note">软件计算每一层路径，显示预计时间和耗材</div>
+
+        <div class="flow-v-item" style="border-color:#3b82f6;background:#eff6ff;">
+          <strong>Step 6：预览检查</strong>
+          <p style="font-size:13px;color:#64748b;margin-top:4px;font-weight:normal;">逐层拖动滑块，观察支撑、壁厚、孔是否完整</p>
+        </div>
+        <div class="flow-v-arrow">↓</div>
+        <div class="flow-v-note">重点看：悬空有没有支撑？孔有没有被填满？壁厚均匀吗？</div>
+
+        <div class="flow-v-item" style="border-color:#059669;background:#ecfdf5;">
+          <strong>Step 7：导出 G-code</strong>
+          <p style="font-size:13px;color:#64748b;margin-top:4px;font-weight:normal;">导出 → 保存 .gcode 文件</p>
+        </div>
+        <div class="flow-v-arrow">↓</div>
+        <div class="flow-v-note">可以发送到打印机，或保存到 SD 卡/U 盘</div>
+      </div>
+
+      <div class="box box-success">
+        <div class="box-title">✅ 流程完成</div>
+        <p>你现在有一份 <code>.gcode</code> 文件，可以直接交给 3D 打印机执行。从 AI 生成自然语言描述，到拿到可打印的指令，完整链路走通了。</p>
+      </div>
+    </section>
+
+    <!-- ==================== 制造约束 ==================== -->
+    <section class="section" id="constraints">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h2 class="section-title">制造约束：设计时就要考虑</h2>
+      </div>
+      <p class="section-desc">切片时发现的问题，根源往往在设计阶段。这是"制造约束前置"的理念。</p>
+
+      <div class="concept-card">
+        <h4>⚠️ 6 条铁律</h4>
+        <div class="compare-table">
+          <table>
+            <tr><th>约束</th><th>为什么</th><th>AI Prompt 怎么写</th></tr>
+            <tr>
+              <td><strong>最小壁厚 ≥ 1.2mm</strong></td>
+              <td>nozzle 0.4mm，3 层才能成墙</td>
+              <td><code>"wall thickness 3 mm"</code></td>
+            </tr>
+            <tr>
+              <td><strong>悬空角度 ≤ 45°</strong></td>
+              <td>超过 45° 塑料会塌，需要支撑</td>
+              <td><code>"avoid overhangs above 45 degrees"</code></td>
+            </tr>
+            <tr>
+              <td><strong>孔径 ≥ 2mm</strong></td>
+              <td>太小打不圆，变成多边形</td>
+              <td><code>"hole diameter 8 mm"</code>（不要小于 2）</td>
+            </tr>
+            <tr>
+              <td><strong>层高是特征高度的整数倍</strong></td>
+              <td>否则特征高度不准</td>
+              <td>特征高度 0.4/0.6/0.8mm，配合 0.2mm 层厚</td>
+            </tr>
+            <tr>
+              <td><strong>支撑不能封死内部</strong></td>
+              <td>拆不出来，零件报废</td>
+              <td><code>"internal cavities accessible"</code></td>
+            </tr>
+            <tr>
+              <td><strong>最大平面朝下</strong></td>
+              <td>接触热床面积大，粘得牢</td>
+              <td>切片时手动旋转，不是 Prompt 的事</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="box box-warning">
+        <div class="box-title">💡 关键洞察</div>
+        <p>如果切片时发现某个零件"打不了"，不要只怪切片软件——回到上午的 Prompt，看看是不是设计时就没考虑这些约束。<strong>Loop Engineering 的验收标准里，应该加入制造约束检查。</strong></p>
+      </div>
+    </section>
+
+    <!-- ==================== 常见问题 ==================== -->
+    <section class="section" id="troubleshoot">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+        </div>
+        <h2 class="section-title">常见问题速查</h2>
+      </div>
+
+      <div class="compare-table">
+        <table>
+          <tr><th>现象</th><th>原因</th><th>解决</th></tr>
+          <tr>
+            <td>导入 STL 报错</td>
+            <td>模型有破面/非流形</td>
+            <td>Bambu Studio 修复，或回炉重生成</td>
+          </tr>
+          <tr>
+            <td>切片后孔被填满</td>
+            <td>孔径太小或 STL 缺陷</td>
+            <td>Prompt 孔径 ≥ 2mm，重新导出 STL</td>
+          </tr>
+          <tr>
+            <td>悬空没生成支撑</td>
+            <td>支撑角度阈值设太高</td>
+            <td>从 45° 调到 50° 或手动加支撑</td>
+          </tr>
+          <tr>
+            <td>预计时间太长</td>
+            <td>填充太高或层厚太薄</td>
+            <td>填充改 15%，层厚改 0.28mm</td>
+          </tr>
+          <tr>
+            <td>薄壁打不圆</td>
+            <td>壁厚不是 nozzle 整数倍</td>
+            <td>壁厚设为 0.4/0.8/1.2/1.6mm</td>
+          </tr>
+          <tr>
+            <td>支撑拆不下来</td>
+            <td>支撑封死了内部空腔</td>
+            <td>切片预览检查支撑位置，或调整模型</td>
+          </tr>
+        </table>
+      </div>
+    </section>
+
+    <div class="footer">
+      <p>Bambu Studio 入门指南 &middot; 从模型到打印 &middot; XJTLU AOA TECH</p>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function copyCode(btn) {
+  var pre = btn.parentElement.querySelector('pre');
+  var text = pre.innerText;
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = '已复制';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = '复制';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+function scrollToSec(id, el) {
+  var sec = document.getElementById(id);
+  if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+  document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+  if (el) el.classList.add('active');
+}
+function toggleMenu() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+window.addEventListener('scroll', function() {
+  var sections = document.querySelectorAll('.section');
+  var navItems = document.querySelectorAll('.nav-item');
+  var current = '';
+  sections.forEach(function(sec) {
+    if (pageYOffset >= sec.offsetTop - 100) current = sec.id;
+  });
+  navItems.forEach(function(item) {
+    item.classList.remove('active');
+    if (item.getAttribute('onclick') && item.getAttribute('onclick').includes("'" + current + "'")) {
+      item.classList.add('active');
+    }
+  });
+});
+</script>
+
+</body>
+</html>

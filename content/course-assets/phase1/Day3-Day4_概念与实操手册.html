@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Day3-Day4 概念与实操手册</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#f5f7f8;color:#17202a;line-height:1.68;font-size:15px}
+    header{background:#243746;color:white;padding:32px 42px 24px}
+    header h1{margin:0 0 6px;font-size:28px}
+    header p{margin:0;color:#dbe4ea;font-size:15px}
+    nav{background:white;border-bottom:1px solid #d8dee6;padding:12px 42px;position:sticky;top:0;z-index:10;display:flex;flex-wrap:wrap;gap:8px 20px}
+    nav a{text-decoration:none;color:#0f766e;font-weight:650;font-size:13px}
+    nav a:hover{text-decoration:underline}
+    main{max-width:960px;margin:24px auto 48px;padding:0 22px}
+    section{margin:32px 0}
+    h2{font-size:22px;margin:28px 0 14px;padding-bottom:8px;border-bottom:2px solid #d8dee6;color:#1a2a3a}
+    h3{font-size:17px;margin:20px 0 10px;color:#2c3e50}
+    p{margin:8px 0 14px}
+    .muted{color:#667789}
+    .tag{display:inline-block;border:1px solid #b8ded8;background:#eef8f6;color:#0b534d;border-radius:999px;padding:2px 9px;font-size:11px;margin-right:6px;vertical-align:middle}
+    .panel{background:white;border:1px solid #d8dee6;border-radius:8px;padding:18px 22px;margin:14px 0}
+    .button{display:inline-block;text-decoration:none;background:#0f766e;color:white;border-radius:6px;padding:8px 13px;font-weight:650;margin-top:6px;font-size:14px}
+    table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+    th,td{border:1px solid #d8dee6;padding:8px 12px;text-align:left;vertical-align:top}
+    th{background:#f0f3f5;font-weight:650;color:#1a2a3a}
+    td:first-child{white-space:nowrap;font-weight:650;width:130px}
+    pre,code{font-family:"SF Mono","Fira Code","Cascadia Code",Menlo,monospace;font-size:13px}
+    pre{background:#1e2a36;color:#e0e8f0;border-radius:6px;padding:14px 18px;overflow-x:auto;margin:10px 0;line-height:1.5}
+    code{background:#eef2f5;padding:1px 5px;border-radius:3px;color:#0b534d}
+    pre code{background:none;padding:0;color:inherit}
+    .flow{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;margin:20px 0;padding:16px;background:white;border:1px solid #d8dee6;border-radius:8px}
+    .flow .node{background:#243746;color:white;border-radius:6px;padding:12px 18px;text-align:center;font-size:14px;font-weight:650;min-width:80px}
+    .flow .arrow{font-size:22px;color:#667789}
+    .flow .node.small{background:#0f766e;font-size:12px;padding:8px 12px}
+    .check{margin:6px 0;padding:4px 0}
+    .check input{margin-right:8px}
+    .qa{margin:12px 0;padding:8px 0 8px 16px;border-left:3px solid #0f766e}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+    @media(max-width:680px){
+      header{padding:22px 18px 16px}
+      nav{padding:8px 18px}
+      main{padding:0 14px}
+      .flow{flex-direction:column}
+      .flow .arrow{transform:rotate(90deg)}
+      th,td{display:block;width:100%}
+      td:first-child{width:100%}
+      .split{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Day3-Day4 概念与实操手册</h1>
+  <p>用项目示例讲清楚 AI Agent 的链路、术语和操作。适合刚接触工程概念的同学。</p>
+</header>
+<nav>
+  <a href="#s0">怎么用</a>
+  <a href="#s1">第一层：大图</a>
+  <a href="#s2">第二层：术语</a>
+  <a href="#s3">第三层：实操</a>
+  <a href="#s4">看不懂词？</a>
+  <a href="#s5">我懂了吗？</a>
+</nav>
+<main>
+
+<section id="s0">
+<h2>这份手册怎么用</h2>
+<p>一共三层，从粗到细。前两层在脑子里搭骨架，第三层才是动手。</p>
+<p><strong>核心目标：</strong>跑通 Day3 Agent、启动 Day4 服务、用 curl 模拟设备发三条消息。有真机的同学再做进阶路线。</p>
+<div class="panel">
+  <p><strong>关于本手册：</strong>以下讲解基于课程包提供的示例主题——校园 AI 助手（整理课程资料、生成摘要/待办/复习卡）。但你的 Agent <strong>不必照抄这个主题</strong>。你可以选择任何方向：个人知识库、游戏攻略引擎、学习计划生成、创意写作助手……Agent 的核心骨架（文件读取、RAG 检索、LLM 调用、工具注册、trace 记录）是不变的。你只需要换掉 workspace 里的素材和 prompt 即可。本手册的作用是让你先看懂一条完整链路是怎么搭的，然后你拿这套骨架去实现自己的主题。</p>
+</div>
+</section>
+
+<section id="s1">
+<h2>第一层：大图理解</h2>
+<p>先不要管细节。把这条链路印在脑子里：</p>
+<div class="flow">
+  <div class="node">人 / 微信</div>
+  <span class="arrow">&rarr;</span>
+  <div class="node small">HTTP 请求<br><code>/v1/chat/completions</code></div>
+  <span class="arrow">&rarr;</span>
+  <div class="node">Day4 API 服务<br><code>cloud_service.py</code></div>
+  <span class="arrow">&rarr;</span>
+  <div class="node">Day3 Agent<br><code>day3_agent_core.py</code></div>
+  <span class="arrow">&rarr;</span>
+  <div class="node small">文件产物<br>workspace</div>
+  <span class="arrow">&rarr;</span>
+  <div class="node">返回结果</div>
+</div>
+<p><strong>一句话：</strong>人发消息 &#8594; HTTP 请求打到电脑上的 Day4 服务 &#8594; Day4 调 Day3 Agent &#8594; Agent 读文件、检索知识、调模型、写结果 &#8594; 结果通过 HTTP 返回。</p>
+
+<h3>Day3 和 Day4 各自负责什么</h3>
+<div class="split">
+  <div class="panel">
+    <p><strong>Day3 — 桌面 Agent</strong><br>Agent 的大脑。负责读文件、建知识库、RAG 检索、调 LLM、写结果、留 trace。它本身是一个可以双击运行的 Python 脚本，不依赖网络服务。</p>
+  </div>
+  <div class="panel">
+    <p><strong>Day4 — 设备网关</strong><br>Agent 的耳朵和嘴巴。在电脑上开一个 HTTP 服务（端口 8000），等人来请求。收到请求后调 Day3 Agent 干活，再把结果返回给请求方。</p>
+  </div>
+</div>
+<p>Day3 是"能干活的程序"，Day4 是"让它能被远程触发的壳"。没有 Day4，Agent 只能你手动双击跑一次。有了 Day4，外面发一条消息它就跑一次。</p>
+
+<h3>为什么要搭两层？</h3>
+<p>这是一种常见工程模式——<strong>关注点分离</strong>。Day3 只管"怎么干活"，不管"谁来叫我干活"。Day4 只管"接客"，不管"怎么干"。好处：</p>
+<ul>
+  <li>改 Agent 逻辑不影响 HTTP 接口，改接口不影响 Agent 逻辑。</li>
+  <li>没有真机时，可以双击 Day3 直接验证 Agent 是否正常。</li>
+  <li>以后想加新的触发方式（网页按钮、定时任务、语音入口），只需要改 Day4，Day3 不用动。</li>
+</ul>
+
+<h3>S3 设备在链路里的真实角色</h3>
+<p>本课程中，人机交互的实际入口是<strong>微信</strong>。你在微信里发消息给 ClawBot，ClawBot 通过互联网转给 S3 设备，S3 再通过局域网向你的电脑发起 HTTP POST 请求。S3 在这里扮演的是<strong>消息中转+结果展示</strong>——它收到微信消息后转发给 Day4，收到 Day4 回复后显示在屏幕上。S3 本身不提供文本输入能力，真正的"人说话"发生在微信端。没有真机的同学，用本机的 curl 直接向 Day4 发请求，效果完全等价。</p>
+
+<h3>每个箭头是什么？</h3>
+<table>
+  <tr><th>箭头</th><th>技术名字</th><th>在本项目里长什么样</th></tr>
+  <tr><td>人/微信 &#8594; Day4</td><td>HTTP POST 请求</td><td><code>curl -X POST http://127.0.0.1:8000/v1/chat/completions -d '{...}'</code></td></tr>
+  <tr><td>Day4 &#8594; Day3</td><td>Python 函数调用</td><td><code>core.run_day3_agent_core(intent=..., workspace=...)</code>（见 cloud_service.py）</td></tr>
+  <tr><td>Day3 &#8594; 文件产物</td><td>Tool Use: write_file</td><td>写入 <code>course_summary.md</code>、<code>tasks.md</code>、<code>risks.md</code>、<code>review_cards.json</code></td></tr>
+  <tr><td>Day3 &#8594; 大模型</td><td>LLM API 调用</td><td>发到 SiliconFlow 的 <code>/v1/chat/completions</code></td></tr>
+  <tr><td>Day4 &#8594; 返回</td><td>HTTP 响应</td><td>JSON 里的 <code>choices[0].message.content</code>，设备屏显/终端输出</td></tr>
+</table>
+
+<div class="qa">
+  <p><strong>自测：</strong>如果 Day3 Agent 挂了，微信消息还能触发吗？</p>
+</div>
+<div class="qa">
+  <p><strong>自测：</strong>curl 发出去的 JSON 最后会变成什么文件？</p>
+</div>
+</section>
+
+<section id="s2">
+<h2>第二层：术语地图</h2>
+<p>每个词都只解释它在本次实操里的意思。想了解更多就去问 AI，这里够你跑通每一步。</p>
+
+<h3>基础网络</h3>
+<table>
+  <tr><th>术语</th><th>是什么</th><th>在本项目哪里出现</th></tr>
+  <tr><td>本机</td><td>你手上这台电脑</td><td>Day3 Agent 在你电脑上跑，Day4 服务也在你电脑上跑</td></tr>
+  <tr><td>局域网</td><td>同一个 Wi-Fi 下的所有设备组成的小网络</td><td>S3 设备和你的电脑连同一个 Wi-Fi</td></tr>
+<tr><td>IP 地址</td><td>设备在网络里的门牌号</td><td><code>127.0.0.1</code>（本机自己）、<code>192.168.x.x</code> / <code>10.x.x.x</code> / <code>172.16-31.x.x</code> 等（局域网 IP 不固定，取决于路由器。启动 Day4 服务时终端会打印你的实际 IP，看 <code>Device Base URL</code> 那行）</td></tr>
+  <tr><td>端口</td><td>一台电脑上不同服务的门牌号</td><td><code>:8000</code> 是 Day4 服务的端口。浏览器用 80/443，Day4 用 8000</td></tr>
+  <tr><td>URL</td><td>完整地址：协议 + IP + 端口 + 路径</td><td><code>http://127.0.0.1:8000/v1/chat/completions</code></td></tr>
+  <tr><td>路径</td><td>URL 里端口后面的部分</td><td><code>/v1/chat/completions</code> — 不同的路径对应不同功能</td></tr>
+  <tr><td>服务</td><td>一直在后台跑、等人来请求的程序</td><td>Day4 的 <code>uvicorn cloud_service:app</code></td></tr>
+  <tr><td>服务器</td><td>跑着服务的电脑（可以是你的本机）</td><td>你的 Mac/PC 就是"服务器"</td></tr>
+  <tr><td>客户端</td><td>发请求的一方</td><td>S3 设备、微信、curl、浏览器都是客户端</td></tr>
+</table>
+
+<h3>HTTP / API</h3>
+<table>
+  <tr><th>术语</th><th>是什么</th><th>在本项目哪里出现</th></tr>
+  <tr><td>HTTP</td><td>客户端和服务器之间通信的协议</td><td>curl 和 Day4 服务之间走的就是 HTTP</td></tr>
+  <tr><td>GET</td><td>向服务器"读取"数据的请求</td><td><code>GET /health</code> — 问服务是否活着</td></tr>
+  <tr><td>POST</td><td>向服务器"发送"数据的请求</td><td><code>POST /v1/chat/completions</code> — 把消息发给 Agent</td></tr>
+  <tr><td>请求</td><td>客户端发给服务器的东西</td><td>curl 命令发的整个内容</td></tr>
+  <tr><td>响应</td><td>服务器返回给客户端的东西</td><td>JSON 格式的回复文本</td></tr>
+  <tr><td>Header</td><td>请求/响应的附加信息（不是正文）</td><td><code>Content-Type: application/json</code> 告诉服务器"我发的是 JSON"</td></tr>
+  <tr><td>Body</td><td>请求/响应的正文</td><td><code>-d '{"model":"pocket-campus-agent",...}'</code> 这整串 JSON</td></tr>
+  <tr><td>状态码</td><td>服务器说"成没成功"的数字</td><td>200 = 成功，404 = 找不到，500 = 服务器崩了</td></tr>
+  <tr><td>OpenAI-compatible API</td><td>一种约定好的 HTTP 接口格式</td><td>Day4 的 <code>/v1/chat/completions</code> 模仿 OpenAI 的格式，让 ESP-Claw 能直接调用</td></tr>
+</table>
+
+<h3>命令行</h3>
+<table>
+  <tr><th>术语</th><th>是什么</th><th>在本项目哪里出现</th></tr>
+  <tr><td>终端</td><td>命令行窗口。Mac 叫 Terminal，Win 叫 CMD/PowerShell</td><td>跑 <code>run_day3_agent.command</code> 时弹出的那个黑/白窗口</td></tr>
+  <tr><td>当前文件夹</td><td>终端现在"在"的文件夹（工作目录）</td><td>脚本里 <code>cd "$(dirname "$0")"</code> 先把自己切到脚本所在文件夹</td></tr>
+  <tr><td>脚本</td><td>可双击运行的文件，里面是终端命令</td><td><code>run_day3_agent.command</code>（Mac）、<code>.bat</code>（Win）</td></tr>
+  <tr><td>环境变量</td><td>终端记住的键值对，程序启动时读取</td><td><code>MOCK_LLM=1</code> 告诉 Agent 用离线模式，<code>PORT=8000</code> 设端口</td></tr>
+  <tr><td>curl</td><td>命令行发 HTTP 请求的工具</td><td>模拟设备发请求，验证服务是否正常</td></tr>
+  <tr><td>换行和引号</td><td>复制命令时的常见坑</td><td><code>\</code> 是换行继续，不能漏；单引号里内容不变，双引号里 <code>$</code> 会展开</td></tr>
+</table>
+
+<h3>数据格式</h3>
+<table>
+  <tr><th>术语</th><th>是什么</th><th>在本项目哪里出现</th></tr>
+  <tr><td>JSON</td><td>结构化数据格式，人和程序都能读</td><td>curl 的 <code>-d</code> 后面那串、<code>review_cards.json</code>、API 的请求和响应</td></tr>
+  <tr><td>JSONL</td><td>每行一个 JSON 对象的文件</td><td><code>trace_log.jsonl</code> — 每一行是一条 Agent 动作</td></tr>
+  <tr><td>Markdown</td><td>带格式标点的纯文本</td><td><code>course_summary.md</code>、<code>tasks.md</code>、<code>risks.md</code></td></tr>
+  <tr><td>对象</td><td>JSON 里的 <code>{键: 值, ...}</code></td><td><code>{"role":"user","content":"请整理今天资料"}</code></td></tr>
+  <tr><td>数组</td><td>JSON 里的 <code>[值, 值, ...]</code></td><td><code>"messages":[{"role":"user","content":"..."}]</code> — messages 是一个数组</td></tr>
+  <tr><td>字段</td><td>JSON 对象里的键</td><td><code>model</code>、<code>messages</code>、<code>content</code>、<code>role</code></td></tr>
+  <tr><td>字符串</td><td>双引号包起来的文本</td><td><code>"请整理今天资料"</code></td></tr>
+  <tr><td>schema</td><td>约定好"数据必须长什么样"的规则</td><td>Day4 的 <code>ChatCompletionRequest</code> 定义了 model、messages、temperature 等字段</td></tr>
+</table>
+
+<h3>Python 与 HTML 基础</h3>
+<p>本项目的代码由 Python（后端）和 HTML（页面）组成。以下是你打开文件时最常遇到的东西：</p>
+<table>
+  <tr><th>术语</th><th>是什么</th><th>在本项目哪里出现</th></tr>
+  <tr><td><code>.py</code> 文件</td><td>Python 源代码文件</td><td><code>day3_agent_core.py</code>、<code>cloud_service.py</code></td></tr>
+  <tr><td><code>import</code></td><td>引入另一个文件或库</td><td><code>import json</code>、<code>from fastapi import FastAPI</code></td></tr>
+  <tr><td><code>def</code> 函数</td><td>定义一段可重复调用的代码块</td><td><code>def health()</code>、<code>def execute_agent(intent, ...)</code></td></tr>
+  <tr><td><code>if __name__ == "__main__"</code></td><td>"如果是直接运行这个文件就执行下面的代码"的固定写法</td><td><code>day3_agent_core.py</code> 末尾</td></tr>
+  <tr><td><code>class</code></td><td>定义一个数据模型的"模板"</td><td><code>class ChatCompletionRequest(BaseModel)</code></td></tr>
+  <tr><td><code>@app.get / @app.post</code></td><td>FastAPI 的路由注解——"这个函数对应哪个 HTTP 方法+路径"</td><td><code>@app.get("/health")</code>、<code>@app.post("/v1/chat/completions")</code></td></tr>
+  <tr><td><code>.html</code> 文件</td><td>网页文件。浏览器打开后渲染成你看到的页面</td><td><code>Day3_Agent控制台.html</code>、<code>index.html</code>、本手册</td></tr>
+  <tr><td><code>&lt;h1&gt;~&lt;h6&gt;</code></td><td>HTML 标题标签，数字越小标题越大</td><td>本页的 <code>&lt;h1&gt;</code> 是标题，<code>&lt;h2&gt;</code> 是章节名</td></tr>
+  <tr><td><code>&lt;div&gt;</code></td><td>HTML 容器——用来分组和布局的"盒子"</td><td><code>&lt;div class="panel"&gt;</code> 包住一个白卡片</td></tr>
+  <tr><td><code>&lt;p&gt;</code></td><td>段落标签</td><td>本文每一段文字</td></tr>
+  <tr><td><code>&lt;table&gt;</code></td><td>HTML 表格</td><td>本页所有术语表</td></tr>
+  <tr><td><code>&lt;pre&gt;&lt;code&gt;</code></td><td>代码块。保留空格和换行，用等宽字体</td><td>所有 curl 命令、JSON 示例</td></tr>
+  <tr><td><code>&lt;a href="..."&gt;</code></td><td>超链接——点击跳转到另一个页面</td><td>导航栏的跳转链接</td></tr>
+  <tr><td><code>class</code> / <code>id</code></td><td>HTML 元素的"标签名"，CSS 用它来选中并设置样式</td><td><code>class="panel"</code> 选中的元素会套用白卡样式</td></tr>
+  <tr><td><code>&lt;style&gt;</code></td><td>内嵌 CSS——写在这个标签里的规则控制页面外观</td><td>本文件顶部的 <code>&lt;style&gt;...&lt;/style&gt;</code></td></tr>
+</table>
+
+<h3>AI 工程</h3>
+<table>
+  <tr><th>术语</th><th>是什么</th><th>在本项目哪里出现</th></tr>
+  <tr><td>LLM</td><td>大语言模型，AI 的"大脑"</td><td>SiliconFlow 上的 Kimi、DeepSeek、Qwen。程序调它，不是人直接聊</td></tr>
+  <tr><td>Prompt</td><td>你给 LLM 的指令</td><td>设备消息 "请整理今天资料" 就是 prompt</td></tr>
+  <tr><td>Context</td><td>LLM 回答问题需要的背景资料</td><td>Day3 Agent 把课程笔记读进 prompt 作为上下文</td></tr>
+  <tr><td>Agent</td><td>能自己调用工具、做多步操作的 AI 程序</td><td><code>day3_agent_core.py</code> — 不是只会聊天，是会读文件、查资料、写结果</td></tr>
+  <tr><td>Tool Use</td><td>Agent 调用外部工具的能力</td><td><code>list_files</code>、<code>read_file</code>、<code>search_workspace</code>、<code>write_file</code></td></tr>
+  <tr><td>RAG</td><td>先检索本地资料，再把相关内容交给 LLM 回答</td><td>Agent 把 workspace 文本切块建索引 &#8594; 检索 top-k 相关片段 &#8594; 交给 LLM</td></tr>
+  <tr><td>trace</td><td>Agent 每一步干了什么的完整记录</td><td><code>outputs/trace_log.jsonl</code>（Day3）、<code>day4_trace_log.jsonl</code>（Day4）</td></tr>
+  <tr><td>workspace</td><td>Agent 被允许读写的文件夹</td><td>Day3: <code>outputs/agent_workspace/</code>；Day4: <code>day4_agent_workspace/</code></td></tr>
+  <tr><td>模型路由</td><td>根据任务类型选不同的模型</td><td>Day1 决定的：Kimi 做摘要、DeepSeek 做 Agent、Qwen 做复习</td></tr>
+</table>
+
+<h3>设备链路</h3>
+<table>
+  <tr><th>术语</th><th>是什么</th><th>在本项目哪里出现</th></tr>
+  <tr><td>M5Stack CoreS3</td><td>带屏幕和 Wi-Fi 的开发板</td><td>刷了 ESP-Claw 固件后，接收微信消息并转发给 Day4 服务</td></tr>
+  <tr><td>ESP-Claw</td><td>M5Stack 的固件，让它能当 AI 设备用</td><td>烧录进 S3 后，微信扫码绑定，消息就能触发 Day4 服务</td></tr>
+  <tr><td>微信入口</td><td>通过微信 ClawBot 给设备发消息</td><td>微信发"请整理今天资料" &#8594; ClawBot 转给 S3 &#8594; S3 POST 到你的 Day4 服务</td></tr>
+  <tr><td>Base URL</td><td>设备要找的 API 地址</td><td><code>http://192.168.x.x:8000/v1</code>（你的局域网 IP，不是 127.0.0.1）</td></tr>
+  <tr><td>Model</td><td>设备调用时填的模型名</td><td><code>pocket-campus-agent</code></td></tr>
+  <tr><td>API Key</td><td>设备连接服务的凭证</td><td><code>classroom-demo-key</code>（课堂演示用，不做强校验）</td></tr>
+</table>
+
+<div class="qa">
+  <p><strong>自测：</strong>为什么 S3 的 Base URL 不能填 <code>127.0.0.1</code>？</p>
+</div>
+<div class="qa">
+  <p><strong>自测：</strong><code>messages</code> 在 curl 请求里是对象还是数组？</p>
+</div>
+</section>
+
+<section id="s3">
+<h2>第三层：照做实操</h2>
+
+<h3>A. Day3：跑通桌面 Agent</h3>
+<div class="panel">
+  <p><span class="tag">目标</span> 让 Agent 读文件、检索知识、调模型、写结果、留 trace。</p>
+  <p><strong>1. 双击运行</strong></p>
+  <p>Mac 双击 <code>day3-desktop-agent/run_day3_agent.command</code><br>
+  Windows 双击 <code>day3-desktop-agent/run_day3_agent.bat</code></p>
+  <p>终端会打出 Agent 每一步在干嘛：<code>list_files</code> &#8594; <code>search_workspace</code> &#8594; <code>call_llm</code> &#8594; <code>write_file</code>。</p>
+  <p>如果你想让 Agent 离线跑（不调真实模型，不花钱）：在终端输入<br>
+  <code>cd day3-desktop-agent &amp;&amp; MOCK_LLM=1 python3 day3_agent_core.py</code></p>
+  <p><strong>2. 打开控制台</strong><br>
+  双击打开 <code>day3-desktop-agent/outputs/Day3_Agent控制台.html</code>。你会看到摘要、待办、风险、复习卡和 Agent 执行记录。</p>
+  <p><strong>3. 检查产物</strong></p>
+  <table>
+    <tr><th>产物</th><th>路径</th><th>说明</th></tr>
+    <tr><td>课程摘要</td><td><code>outputs/agent_workspace/summaries/course_summary.md</code></td><td>Agent 读了资料后写的总结</td></tr>
+    <tr><td>待办</td><td><code>outputs/agent_workspace/summaries/tasks.md</code></td><td>Agent 提取的待办事项</td></tr>
+    <tr><td>风险</td><td><code>outputs/agent_workspace/summaries/risks.md</code></td><td>Agent 发现的潜在问题</td></tr>
+    <tr><td>复习卡</td><td><code>outputs/agent_workspace/cards/review_cards.json</code></td><td>JSON 格式的复习题</td></tr>
+    <tr><td>知识库索引</td><td><code>outputs/agent_workspace/knowledge/chunk_index.json</code></td><td>RAG 切出来的文本块</td></tr>
+    <tr><td>检索结果</td><td><code>outputs/agent_workspace/knowledge/retrieval_result.json</code></td><td>RAG 命中了哪些块</td></tr>
+    <tr><td>执行记录</td><td><code>outputs/trace_log.jsonl</code></td><td>每一步谁调了谁</td></tr>
+  </table>
+  <p><strong>4. Agent 做了哪 5 件事？</strong>读文件 &#8594; 检索知识 &#8594; 调用模型 &#8594; 写结果 &#8594; 留记录。缺一不可。</p>
+</div>
+
+<div class="qa"><p><strong>自测：</strong>如果没有 <code>trace_log.jsonl</code>，你还能讲清楚 Agent 每一步在干什么吗？</p></div>
+
+<h3>B. Day4：启动服务 + 模拟设备</h3>
+<div class="panel">
+  <p><span class="tag">目标</span> 启动 API 服务，用 curl 模拟设备发请求，验证完整链路。</p>
+  <p><strong>1. 先自测</strong></p>
+  <p>Mac 双击 <code>day4-device-gateway/test_day4_service.command</code><br>
+  Windows 双击 <code>day4-device-gateway/test_day4_service.bat</code></p>
+  <p>自测会模拟设备发三条消息，并输出结果到终端。看到"确认整理"和"复习题"的回复即通过。</p>
+  <p><strong>2. 启动服务</strong></p>
+  <p>最简单：双击 <code>day4-device-gateway/run_day4_service.command</code>（Mac）或 <code>.bat</code>（Win）。</p>
+  <p>终端会打印两行关键信息：</p>
+  <pre>Local:       http://127.0.0.1:8000/dashboard
+Device Base URL: http://192.168.x.x:8000/v1</pre>
+  <p><strong>这个终端不要关。</strong>关了服务就停了。</p>
+
+<h3>怎么看自己的局域网 IP</h3>
+<div class="panel">
+  <p>Day4 服务启动时，终端已经打印了你的 IP（<code>Device Base URL</code> 那行）。如果没看到或不确定，手动查：</p>
+  <p><strong>Mac：</strong>打开 <em>系统设置 &#8594; 网络 &#8594; Wi-Fi</em>，点当前连接旁边的"详细信息"，IP 地址写在里面。或者终端跑：<br><code>ipconfig getifaddr en0</code>（Wi-Fi）或 <code>ipconfig getifaddr en1</code></p>
+  <p><strong>Windows：</strong>打开终端（CMD），输入 <code>ipconfig</code>，找到"无线局域网适配器 Wi-Fi"下面的 <code>IPv4 地址</code>。</p>
+  <p class="muted">注意：不一定是 192.168 开头。也可能是 10.x.x.x、172.x.x.x，取决于路由器。无论哪种，只要 S3 和你的电脑在同一个 Wi-Fi 下，就用这个 IP。</p>
+</div>
+
+<h3>防火墙：必须关</h3>
+<div class="panel">
+  <p>S3 设备通过局域网访问你的电脑，如果防火墙开着，外部连接会被拦截。在启动服务之前，确认防火墙已关闭：</p>
+  <p><strong>Mac：</strong><em>系统设置 &#8594; 网络 &#8594; 防火墙</em> &#8594; 关闭。如果系统策略不允许完全关闭，至少确认没有勾选"阻止所有传入连接"。</p>
+  <p><strong>Windows：</strong>控制面板 &#8594; Windows Defender 防火墙 &#8594; 启用或关闭 Windows Defender 防火墙 &#8594; 专用网络和公用网络都选"关闭"。</p>
+  <p class="muted">课堂演示期间临时关闭是安全的。日常使用时记得重新打开。</p>
+</div>
+  <p><strong>3. 打开 Dashboard</strong></p>
+  <p>浏览器访问 <a href="http://127.0.0.1:8000/dashboard">http://127.0.0.1:8000/dashboard</a>。你会看到设备输入、Agent 工具调用、RAG 命中、产物和事件时间线。</p>
+  <p><strong>4. 用 curl 模拟设备</strong></p>
+  <p>新开一个终端，复制以下三条命令依次执行。每执行一条看返回了什么（按顺序来，别跳）：</p>
+  <pre># 第一条：告诉 Agent 要整理资料
+curl -X POST http://127.0.0.1:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer classroom-demo-key" \
+  -d '{"model":"pocket-campus-agent","messages":[{"role":"user","content":"请整理今天资料"}]}'
+
+# 第二条：确认执行（Agent 会真的要干活）
+curl -X POST http://127.0.0.1:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer classroom-demo-key" \
+  -d '{"model":"pocket-campus-agent","messages":[{"role":"user","content":"确认整理"}]}'
+
+# 第三条：要一道复习题
+curl -X POST http://127.0.0.1:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer classroom-demo-key" \
+  -d '{"model":"pocket-campus-agent","messages":[{"role":"user","content":"给我一道复习题"}]}'</pre>
+</div>
+
+<h3>curl 命令逐行解释</h3>
+<p>curl 不是重点，重点是"发 HTTP 请求"。curl 只是帮你发的工具。每一行拆开看：</p>
+<table>
+  <tr><th>片段</th><th>含义</th></tr>
+  <tr><td><code>curl</code></td><td>命令行发 HTTP 请求的工具</td></tr>
+  <tr><td><code>-X POST</code></td><td>用 POST 方式（发送数据），不是 GET（读取数据）</td></tr>
+  <tr><td><code>http://127.0.0.1:8000/...</code></td><td>目标地址：本机、8000 端口、/v1/chat/completions 路径</td></tr>
+  <tr><td><code>-H "Content-Type: ..."</code></td><td>告诉服务器：我发的正文是 JSON 格式</td></tr>
+  <tr><td><code>-H "Authorization: ..."</code></td><td>API Key 验证。课堂用 <code>classroom-demo-key</code>，不强校验</td></tr>
+  <tr><td><code>-d '{...}'</code></td><td>请求正文（body）。花括号里是发给 Agent 的 JSON</td></tr>
+  <tr><td><code>"model"</code></td><td>告诉 Day4 服务用哪个模型处理</td></tr>
+  <tr><td><code>"messages"</code></td><td>对话消息数组。每一条有 <code>role</code>（谁说的）和 <code>content</code>（说了什么）</td></tr>
+  <tr><td><code>\</code> 换行</td><td>为了让命令可读而断开，终端会当成一行执行</td></tr>
+</table>
+
+<h3>C. Day4 的 6 个 API 端点</h3>
+<p>上面只用了 <code>/v1/chat/completions</code>，实际 Day4 暴露了 6 个：</p>
+<table>
+  <tr><th>方法</th><th>路径</th><th>干什么</th></tr>
+  <tr><td>GET</td><td><code>/health</code></td><td>检查服务是否活着、Day3 Agent 是否存在、工作区路径</td></tr>
+  <tr><td>GET</td><td><code>/v1/models</code></td><td>列出可用的模型（pocket-campus-agent、pocket-review-coach）</td></tr>
+  <tr><td>POST</td><td><code>/v1/chat/completions</code></td><td>OpenAI 兼容接口。ESP-Claw/微信/curl 都走这条</td></tr>
+  <tr><td>POST</td><td><code>/device/ask</code></td><td>设备直接提问（带设备 ID 和场景标记）</td></tr>
+  <tr><td>POST</td><td><code>/agent/run</code></td><td>直接触发 Agent 执行（不带对话流程）</td></tr>
+  <tr><td>GET</td><td><code>/dashboard</code></td><td>实时看板 HTML 页</td></tr>
+</table>
+<p>试试看：另开终端，跑 <code>curl http://127.0.0.1:8000/health</code> 看看返回的 JSON 里 <code>day3_exists</code> 是不是 <code>true</code>。</p>
+
+<h3>D. 进阶：M5Stack CoreS3 真机路线</h3>
+<div class="panel">
+  <p><span class="tag">进阶</span> 没有真机也能完成核心学习目标。以下是有设备的同学的路子。</p>
+  <ol>
+    <li>用 M5Burner 选 CORES3，烧录 ESP-Claw 固件。</li>
+    <li>重启 S3，连它的 Wi-Fi 热点（<code>esp-claw-xxx</code>）。</li>
+    <li>浏览器打开 <code>192.168.4.1</code>，配 Wi-Fi 和 LLM 设置：<br>
+      <strong>Backend Type:</strong> <code>openai_compatible</code><br>
+      <strong>Config File:</strong> <code>qwen_compatible</code>（不要改！改过会导致 S3 重启异常）<br>
+      <strong>Base URL:</strong> <code>http://你的局域网IP:8000/v1</code><br>
+      <strong>Model:</strong> <code>pocket-campus-agent</code><br>
+      <strong>API Key:</strong> <code>classroom-demo-key</code><br>
+      <strong>Auth Type:</strong> <code>bearer</code></li>
+    <li>保存后，S3 连上 Wi-Fi，生成微信绑定二维码。扫码后微信里发消息就能触发你的 Day4 服务。</li>
+  </ol>
+  <p class="muted">Config File 保持 qwen_compatible 的原因：ESP-Claw 内部按这个配置名加载请求格式。改 openai_compatible 会让 S3 重启异常，这是真机验证的结论。</p>
+</div>
+
+<div class="qa"><p><strong>自测：</strong>S3 的 Base URL 填 <code>http://127.0.0.1:8000/v1</code> 会怎样？为什么不行？</p></div>
+</section>
+
+<section id="s4">
+<h2>看不懂词怎么办？</h2>
+<p>不要泛泛去搜。用下面的模板去问 AI，每次只问一个词，把答案和本项目对上号。</p>
+<div class="panel">
+  <p><strong>模板一：</strong>"用初中生能懂的语言解释 <em>HTTP 请求</em>，并结合我的 Day4 curl 命令 <code>curl -X POST http://127.0.0.1:8000/v1/chat/completions -d '{...}'</code> 说明。"</p>
+  <p><strong>模板二：</strong>"我的项目里有一个 JSON 文件 <code>review_cards.json</code>，里面每个对象有 question、answer、hint 三个字段。请告诉我 JSON 里什么是对象、什么是数组、什么是字段，并用这个文件举例。"</p>
+  <p><strong>模板三：</strong>"我的 Day3 Agent 用了 RAG。它先把 workspace 里所有文本切成 chunk 放进 <code>chunk_index.json</code>，再检索 top-k 放进 <code>retrieval_result.json</code>。请用这个过程解释 RAG 是什么。"</p>
+  <p><strong>模板四：</strong>"我的 S3 设备填 <code>127.0.0.1</code> 当 Base URL 会连不上服务。老师说要填 <code>192.168.x.x</code>。请解释 127.0.0.1 和局域网 IP 的区别。"</p>
+  <p><strong>模板五：</strong>"我正在看一个 Python 文件 <code>cloud_service.py</code>，里面有 <code>def</code>、<code>class</code>、<code>@app.get</code>、<code>import</code>。请用这个文件举例，逐一解释这些语法在做什么。"</p>
+</div>
+</section>
+
+<section id="s5">
+<h2>我是否真的懂了？</h2>
+<p>以下每一项你都能用自己话说出来，才算过。</p>
+<div class="panel">
+  <div class="check"><input type="checkbox"> Day3 Agent 做了哪 5 件事？每件对应哪个文件？</div>
+  <div class="check"><input type="checkbox"> Day4 服务做了哪件事？它和 Day3 的分工是什么？</div>
+  <div class="check"><input type="checkbox"> curl 命令里每一行在干什么？</div>
+  <div class="check"><input type="checkbox"> <code>127.0.0.1</code>、局域网 IP、<code>:8000</code>、<code>/v1/chat/completions</code> 分别是什么？</div>
+  <div class="check"><input type="checkbox"> JSON 里 messages 是数组还是对象？model 是字段还是字符串？</div>
+  <div class="check"><input type="checkbox"> RAG 的三个步骤是什么？对应本项目哪些文件？</div>
+  <div class="check"><input type="checkbox"> 为什么 S3 不能填 <code>127.0.0.1</code>？</div>
+  <div class="check"><input type="checkbox"> trace_log.jsonl 有什么用？没有它还能知道 Agent 干了什么吗？</div>
+  <div class="check"><input type="checkbox"> workspace 是什么？Agent 能不能动 workspace 外面的文件？</div>
+  <div class="check"><input type="checkbox"> 从微信发消息到 S3 屏显结果，中间经过了哪些环节？</div>
+  <div class="check"><input type="checkbox"> <code>cloud_service.py</code> 里的 <code>@app.get("/health")</code> 在干什么？</div>
+  <div class="check"><input type="checkbox"> 你的 Agent 主题可以和示例不同吗？改主题需要改动哪些文件？</div>
+</div>
+</section>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "personalized-v2-auth-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file=.env --watch server.mjs",
+    "start": "node server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "seed:catalog": "node --env-file=.env seed-learning-catalog.mjs",
+    "import:legacy-content": "node --env-file=.env import-legacy-course-content.mjs",
+    "migrate:local-json": "node --env-file=.env migrate-local-json.mjs",
+    "audit:course-content": "node --env-file=.env audit-course-content.mjs"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/cors": "^11.0.1",
+    "@fastify/jwt": "^10.2.1",
+    "@fastify/multipart": "^9.2.1",
+    "argon2": "^0.41.1",
+    "fastify": "^5.2.1",
+    "minio": "^8.0.7",
+    "mysql2": "^3.14.0"
+  }
+}

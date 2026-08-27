@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>智能小车进阶开发 · Seeed XIAO ESP32S3</title>
+<style>
+  :root{
+    --bg:#0f172a; --bg2:#1e293b; --fg:#f1f5f9; --muted:#94a3b8;
+    --accent:#38bdf8; --accent2:#a78bfa; --ok:#22c55e; --warn:#f59e0b; --err:#f87171;
+    --code-bg:#0b1220;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--fg);
+    font-family:"HarmonyOS Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;}
+  .deck{height:100vh;overflow:hidden;position:relative;}
+  .slide{
+    position:absolute; inset:0; padding:48px 64px 84px;
+    display:none; flex-direction:column; overflow:auto;
+    animation:fade .35s ease;
+  }
+  .slide.active{display:flex}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  h1{font-size:44px;margin:0 0 8px;background:linear-gradient(90deg,var(--accent),var(--accent2));
+     -webkit-background-clip:text;background-clip:text;color:transparent;}
+  h2{font-size:30px;margin:0 0 20px;color:var(--accent);}
+  h3{font-size:21px;margin:16px 0 10px;color:var(--accent2);}
+  p,li{font-size:18px;line-height:1.65;color:#e2e8f0}
+  ul{padding-left:22px}
+  li{margin:5px 0}
+  code, pre{font-family:"JetBrains Mono","Consolas",monospace;}
+  pre{background:var(--code-bg);border:1px solid #1f2937;border-radius:10px;
+      padding:14px 18px;overflow:auto;font-size:14.5px;line-height:1.55;color:#e5e7eb;}
+  .tag{display:inline-block;background:#1e293b;border:1px solid #334155;
+       padding:3px 10px;border-radius:999px;font-size:14px;color:var(--muted);margin-right:6px}
+  .grid{display:grid;gap:18px;grid-template-columns:repeat(2,1fr);}
+  .grid.three{grid-template-columns:repeat(3,1fr);}
+  .card{background:var(--bg2);border:1px solid #334155;border-radius:14px;padding:18px 20px;}
+  .card h3{margin-top:0}
+  .footer{position:absolute;left:0;right:0;bottom:0;padding:12px 32px;
+    display:flex;justify-content:space-between;align-items:center;color:var(--muted);
+    background:linear-gradient(180deg,transparent,rgba(0,0,0,.45));font-size:14px;}
+  .nav button{background:#1e293b;color:var(--fg);border:1px solid #334155;
+    padding:8px 14px;border-radius:8px;cursor:pointer;margin-left:8px;font-size:14px;}
+  .nav button:hover{background:#334155}
+  .cover{justify-content:center;align-items:center;text-align:center;background:
+    radial-gradient(1000px 500px at 20% 10%,rgba(56,189,248,.15),transparent 60%),
+    radial-gradient(800px 400px at 80% 90%,rgba(167,139,250,.15),transparent 60%),
+    var(--bg);}
+  .cover h1{font-size:70px}
+  .cover .sub{font-size:22px;color:var(--muted);margin-top:8px}
+  .callout{background:#0b1220;border-left:4px solid var(--accent);
+     padding:10px 14px;border-radius:6px;font-size:16px;color:#cbd5e1;margin:12px 0;}
+  .callout.warn{border-left-color:var(--warn)}
+  a{color:var(--accent)}
+  .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+  .step{display:flex;gap:12px;align-items:flex-start;margin:8px 0}
+  .step .num{flex:none;width:30px;height:30px;border-radius:50%;
+     background:linear-gradient(135deg,var(--accent),var(--accent2));
+     color:#0b1220;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:15px;}
+  table{width:100%;border-collapse:collapse;margin-top:8px;font-size:16px;}
+  th,td{border:1px solid #334155;padding:10px 12px;text-align:left}
+  th{background:#1e293b;color:var(--accent);white-space:nowrap;}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+<!-- 1 封面 -->
+<section class="slide cover active">
+  <h1>智能小车进阶开发</h1>
+  <div class="sub">Seeed XIAO ESP32-S3 · 电机 · 舵机 · 蓝牙控制 · Wi-Fi 摄像头</div>
+  <div style="margin-top:30px">
+    <span class="tag">一天课程</span>
+    <span class="tag">2026-07-02</span>
+    <span class="tag">Arduino · ESP32-S3</span>
+  </div>
+</section>
+
+<!-- 2 目录 -->
+<section class="slide">
+  <h1>课程大纲（一天）</h1>
+  <div class="grid" style="margin-top:20px">
+    <div class="card"><h3>① 上午 · 基础与主线</h3>
+      <ul>
+        <li>认识直流电机 + TB6612</li>
+        <li>认识 SG90 舵机（180°/360°）</li>
+        <li>学会看原理图</li>
+        <li>让小车跑起来</li>
+      </ul>
+    </div>
+    <div class="card"><h3>② 下午 · 进阶开发</h3>
+      <ul>
+        <li>🎮 <b>蓝牙控制小车</b>（主线 A）</li>
+        <li>📡 <b>超声波避障小车</b>（主线 B）</li>
+        <li>Wi-Fi 联网</li>
+        <li>摄像头 CameraWebServer 网页远程拍照</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 3 认识电机 -->
+<section class="slide">
+  <h2>① 认识电机 · 智能小车的"腿"</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>直流减速电机</h3>
+      <ul>
+        <li>典型：<b>3–6V TT 减速电机</b>，两轮驱动小车常用</li>
+        <li>两根线接电源，<b>正反接 = 正反转</b></li>
+        <li>调速：<b>PWM</b> 脉宽调制，改变有效电压</li>
+        <li>直接用主控 IO 驱动 <span class="err">❌ 电流不够，会烧板</span></li>
+        <li>必须用 <b>电机驱动模块 TB6612FNG</b></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>TB6612FNG 驱动模块</h3>
+      <ul>
+        <li>双通道 H 桥，同时驱动 <b>2 路电机</b></li>
+        <li>电源：<code>VM</code>（电机电源）· <code>VCC</code>（逻辑）· <code>GND</code></li>
+        <li>控制：<code>AIN1/AIN2/PWMA</code>、<code>BIN1/BIN2/PWMB</code>、<code>STBY</code></li>
+        <li>逻辑：
+          <span class="tag">IN1=1,IN2=0 正转</span>
+          <span class="tag">IN1=0,IN2=1 反转</span>
+          <span class="tag">IN1=IN2 刹车</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 4 认识舵机 -->
+<section class="slide">
+  <h2>② 认识 SG90 舵机</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>180° 舵机（角度型）</h3>
+      <ul>
+        <li>内部有电位器 + 反馈电路，PWM 决定<b>停留角度</b></li>
+        <li>50Hz PWM，脉宽 <b>0.5ms → 0°</b>，<b>2.5ms → 180°</b></li>
+        <li>Arduino：<code>servo.write(angle)</code></li>
+        <li>常用于机械臂、云台</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>360° 舵机（连续旋转型）</h3>
+      <ul>
+        <li>去掉了限位与反馈，PWM 决定 <b>方向 + 速度</b></li>
+        <li><code>write(90)</code> 停，<code>&lt;90</code> 反转，<code>&gt;90</code> 正转</li>
+        <li>可当"减速电机 + 驱动"一体来用</li>
+        <li>常用于轻负载轮子、传送带</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <h3>接线（三根线）</h3>
+    <ul>
+      <li>红：<b>+5V</b>（不要用 3.3V，力气会不够）　棕/黑：<b>GND</b>　橙/黄：<b>信号线</b></li>
+      <li>建议舵机电源与主控 <b>共 GND、单独走电源</b>，避免复位</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 5 学会看原理图 -->
+<section class="slide">
+  <h2>③ 学会看原理图</h2>
+  <div class="callout" style="font-size:20px;line-height:1.8">
+    📐 <b>接线之前先看原理图，弄清每个引脚被谁用了，才能避免冲突和烧板。</b>
+  </div>
+  <div class="grid" style="margin-top:20px">
+    <div class="card">
+      <h3>本次课程配套原理图</h3>
+      <ul>
+        <li><b>AI_sense_V1.7.pdf</b> — XIAO ESP32-S3 Sense 主控引脚</li>
+        <li><b>AI_baseboard_V1.7.pdf</b> — 底板电源、电机接口、Grove/杜邦口</li>
+        <li>课程仓库：<br>
+          <a href="https://github.com/XJTLU-AOA-TECH/domestic-ai-makers-pbl-phase4/tree/main/day3-car-motor-servo-control" target="_blank" style="word-break:break-all">
+            github.com/XJTLU-AOA-TECH/domestic-ai-makers-pbl-phase4<br>
+            /tree/main/day3-car-motor-servo-control
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>看图要抓的三件事</h3>
+      <ol>
+        <li>板子给我几个可用引脚？<b>D0–D10</b></li>
+        <li>每个引脚被<b>哪个外设</b>占用了？（电机、传感器、屏幕…）</li>
+        <li>如果冲突：<b>换空闲引脚 or 用飞线</b>，不要硬凑</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- 6 让小车跑起来 -->
+<section class="slide">
+  <h2>④ 让小车跑起来</h2>
+  <p>把 TB6612 两路电机封装成"动作函数"，就得到了小车的运动库。</p>
+<pre>// 引脚以底板 J9 原理图为准
+#define AIN1 D0
+#define AIN2 D1
+#define PWMA D6
+#define BIN1 D2
+#define BIN2 D3
+#define PWMB D7
+#define STBY D5
+
+void motor(int in1,int in2,int pwmPin,int speed){
+  digitalWrite(in1, speed >= 0);
+  digitalWrite(in2, speed <  0);
+  analogWrite(pwmPin, constrain(abs(speed), 0, 255));
+}
+void forward(int s){ motor(AIN1,AIN2,PWMA, s); motor(BIN1,BIN2,PWMB, s); }
+void back   (int s){ motor(AIN1,AIN2,PWMA,-s); motor(BIN1,BIN2,PWMB,-s); }
+void left   (int s){ motor(AIN1,AIN2,PWMA,-s); motor(BIN1,BIN2,PWMB, s); }
+void right  (int s){ motor(AIN1,AIN2,PWMA, s); motor(BIN1,BIN2,PWMB,-s); }
+void stopAll(){ motor(AIN1,AIN2,PWMA,0); motor(BIN1,BIN2,PWMB,0); }
+
+void setup(){
+  int pins[]={AIN1,AIN2,PWMA,BIN1,BIN2,PWMB,STBY};
+  for(int p:pins) pinMode(p,OUTPUT);
+  digitalWrite(STBY,HIGH);
+}
+void loop(){
+  forward(180); delay(1000);
+  right  (160); delay(400);
+  left   (160); delay(400);
+  back   (180); delay(800);
+  stopAll();    delay(1000);
+}</pre>
+  <p>🎯 先在<b>桌上悬空</b>试轮子方向；确认无误再让小车落地跑，防止翻车。</p>
+</section>
+
+<!-- 7 蓝牙控制小车 -->
+<section class="slide">
+  <h2>🎮 蓝牙控制小车</h2>
+  <div class="callout">
+    ESP32-S3 <b>板载 BLE 5.0</b>，不用额外硬件，手机就是遥控器。<br>
+    在上一节小车运动库的基础上，把 <code>loop()</code> 里的 delay 序列换成 <b>BLE 回调</b>，小车就能被手机指挥。
+  </div>
+  <div class="grid" style="margin-top:14px">
+    <div class="card">
+      <h3>工作流程</h3>
+      <ol>
+        <li>ESP32-S3 广播一个 <b>BLE 服务</b>（自定义 UUID）</li>
+        <li>手机 App 扫描 → 连接 → 发送字符</li>
+        <li>ESP32 收到 <code>'F'/'B'/'L'/'R'/'S'</code></li>
+        <li>解析后调用 <code>forward/back/left/right/stopAll</code></li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>关键概念</h3>
+      <ul>
+        <li><b>Service（服务）</b>：一组功能的集合，用 UUID 标识</li>
+        <li><b>Characteristic（特征值）</b>：具体的数据通道</li>
+        <li><b>Nordic UART Service</b>：一个通用的"串口式"BLE 协议，多数 App 都支持</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 8 App 选择 -->
+<section class="slide">
+  <h2>蓝牙小车 · 手机 App 选择</h2>
+  <div class="grid three">
+    <div class="card">
+      <h3>方案 A：Serial Bluetooth Terminal</h3>
+      <ul>
+        <li>安卓免费，界面简单</li>
+        <li>可自定义 <b>5 个按钮</b>，各发送指定字符</li>
+        <li>推荐做<b>入门 Demo</b></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>方案 B：nRF Connect</h3>
+      <ul>
+        <li>Nordic 官方，安卓/iOS 都有</li>
+        <li>可直接查看 BLE 服务、特征值</li>
+        <li>适合<b>调试 UUID</b>，观察数据流</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>方案 C：Dabble</h3>
+      <ul>
+        <li>专门做遥控的 App</li>
+        <li>自带<b>虚拟摇杆 + 游戏手柄</b>界面</li>
+        <li>效果最"炫"，需配套库</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 9 蓝牙小车代码 -->
+<section class="slide">
+  <h2>蓝牙控制小车 · 完整代码</h2>
+<pre>#include &lt;BLEDevice.h&gt;
+#include &lt;BLEServer.h&gt;
+#include &lt;BLEUtils.h&gt;
+#include &lt;BLE2902.h&gt;
+
+// —— 电机引脚（沿用底板 J9） —— //
+#define AIN1 D0
+#define AIN2 D1
+#define PWMA D6
+#define BIN1 D2
+#define BIN2 D3
+#define PWMB D7
+#define STBY D5
+
+// —— Nordic UART Service UUID（通用，App 都支持） —— //
+#define SERVICE_UUID "6e400001-b5a3-f393-e0a9-e50e24dcca9e"
+#define CHAR_RX_UUID "6e400002-b5a3-f393-e0a9-e50e24dcca9e"
+
+void motor(int in1,int in2,int pwmPin,int speed){
+  digitalWrite(in1, speed >= 0);
+  digitalWrite(in2, speed <  0);
+  analogWrite(pwmPin, constrain(abs(speed), 0, 255));
+}
+void forward(int s){ motor(AIN1,AIN2,PWMA, s); motor(BIN1,BIN2,PWMB, s); }
+void back   (int s){ motor(AIN1,AIN2,PWMA,-s); motor(BIN1,BIN2,PWMB,-s); }
+void left   (int s){ motor(AIN1,AIN2,PWMA,-s); motor(BIN1,BIN2,PWMB, s); }
+void right  (int s){ motor(AIN1,AIN2,PWMA, s); motor(BIN1,BIN2,PWMB,-s); }
+void stopAll(){ motor(AIN1,AIN2,PWMA,0); motor(BIN1,BIN2,PWMB,0); }
+
+class RxCB: public BLECharacteristicCallbacks{
+  void onWrite(BLECharacteristic* c) override{
+    String v = c-&gt;getValue().c_str();
+    Serial.print("Got: "); Serial.println(v);
+    char cmd = v.length() ? v[0] : 'S';
+    switch(cmd){
+      case 'F': forward(200); break;
+      case 'B': back   (200); break;
+      case 'L': left   (180); break;
+      case 'R': right  (180); break;
+      default : stopAll();    break;
+    }
+  }
+};
+
+void setup(){
+  Serial.begin(115200);
+  int pins[]={AIN1,AIN2,PWMA,BIN1,BIN2,PWMB,STBY};
+  for(int p:pins) pinMode(p,OUTPUT);
+  digitalWrite(STBY,HIGH);
+
+  BLEDevice::init("XIAO-CAR");                    // 蓝牙名字
+  auto* svr = BLEDevice::createServer();
+  auto* svc = svr-&gt;createService(SERVICE_UUID);
+  auto* rx  = svc-&gt;createCharacteristic(
+      CHAR_RX_UUID, BLECharacteristic::PROPERTY_WRITE);
+  rx-&gt;setCallbacks(new RxCB());
+  svc-&gt;start();
+  svr-&gt;getAdvertising()-&gt;start();
+  Serial.println("BLE ready, name = XIAO-CAR");
+}
+void loop(){ delay(10); }</pre>
+</section>
+
+<!-- 10 操作步骤 & 坑 -->
+<section class="slide">
+  <h2>蓝牙小车 · 操作步骤 & 常见坑</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>操作步骤</h3>
+      <div class="step"><div class="num">1</div><div>上传程序 → 串口打印 <code>BLE ready, name = XIAO-CAR</code></div></div>
+      <div class="step"><div class="num">2</div><div>手机安装 <b>Serial Bluetooth Terminal</b></div></div>
+      <div class="step"><div class="num">3</div><div>Devices → <b>Bluetooth LE</b> → 扫描 → 选择 <b>XIAO-CAR</b></div></div>
+      <div class="step"><div class="num">4</div><div>连接成功后进入终端，右下角有 <b>M1–M5</b> 快捷键</div></div>
+      <div class="step"><div class="num">5</div><div>长按快捷键 → 编辑 → 分别设置为 <code>F/B/L/R/S</code></div></div>
+      <div class="step"><div class="num">6</div><div>点按钮 → 小车动起来 🎉</div></div>
+    </div>
+    <div class="card">
+      <h3>常见坑</h3>
+      <ul>
+        <li>❗ 一定选 <b>Bluetooth LE</b> 模式（不是 Classic）</li>
+        <li>❗ App 端发送记得关掉自动换行，或代码里 <code>trim()</code></li>
+        <li>❗ 电机不动？先单独跑电机 Demo 验证接线</li>
+        <li>❗ 一动就重启 = 电池电压不够，用锂电或稳压模块</li>
+        <li>❗ 只能连一台手机，换手机记得先断开</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 10b 超声波避障 · 原理 -->
+<section class="slide">
+  <h2>📡 超声波避障小车 · 原理</h2>
+  <div class="callout">
+    另一条主线：让小车"自己看得见前方"，遇到障碍物自动停下或转向，不需要手机遥控。
+  </div>
+  <div class="grid" style="margin-top:12px">
+    <div class="card">
+      <h3>HC-SR04 超声波模块</h3>
+      <ul>
+        <li>4 根线：<code>VCC</code>（5V）· <code>GND</code> · <code>TRIG</code>（触发） · <code>ECHO</code>（回声）</li>
+        <li>TRIG 发 <b>10μs 高脉冲</b> → 模块发出 8 个 40kHz 声波</li>
+        <li>ECHO 回一个高电平，宽度 = 声波往返时间</li>
+        <li>距离(cm) = <b>高电平时长(μs) ÷ 58</b></li>
+        <li>量程：<b>2 – 400 cm</b>，精度 3mm</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>避障逻辑（简单版）</h3>
+      <ol>
+        <li>正前方测距</li>
+        <li>&gt; 30cm → 前进</li>
+        <li>≤ 30cm → 停车，随机左转或右转 500ms</li>
+        <li>循环</li>
+      </ol>
+      <h3 style="margin-top:14px">进阶版</h3>
+      <ul>
+        <li>把超声波装在 <b>SG90 舵机</b> 云台上</li>
+        <li>停车时舵机左右扫描，选空旷方向走</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout warn" style="margin-top:12px">
+    ⚠️ 引脚提示：底板 D2/D3 已经被电机 B 通道占用，超声波接线请<b>走飞线到空闲引脚 D8/D9</b>。
+  </div>
+</section>
+
+<!-- 10c 超声波避障 · 代码 -->
+<section class="slide">
+  <h2>📡 超声波避障小车 · 完整代码</h2>
+<pre>// —— 电机引脚（沿用底板 J9） —— //
+#define AIN1 D0
+#define AIN2 D1
+#define PWMA D6
+#define BIN1 D2
+#define BIN2 D3
+#define PWMB D7
+#define STBY D5
+
+// —— 超声波（飞线到空闲引脚） —— //
+#define TRIG D9
+#define ECHO D8
+
+void motor(int in1,int in2,int pwmPin,int speed){
+  digitalWrite(in1, speed >= 0);
+  digitalWrite(in2, speed <  0);
+  analogWrite(pwmPin, constrain(abs(speed), 0, 255));
+}
+void forward(int s){ motor(AIN1,AIN2,PWMA, s); motor(BIN1,BIN2,PWMB, s); }
+void back   (int s){ motor(AIN1,AIN2,PWMA,-s); motor(BIN1,BIN2,PWMB,-s); }
+void left   (int s){ motor(AIN1,AIN2,PWMA,-s); motor(BIN1,BIN2,PWMB, s); }
+void right  (int s){ motor(AIN1,AIN2,PWMA, s); motor(BIN1,BIN2,PWMB,-s); }
+void stopAll(){ motor(AIN1,AIN2,PWMA,0); motor(BIN1,BIN2,PWMB,0); }
+
+long readDistance(){
+  digitalWrite(TRIG, LOW);  delayMicroseconds(2);
+  digitalWrite(TRIG, HIGH); delayMicroseconds(10);
+  digitalWrite(TRIG, LOW);
+  long t = pulseIn(ECHO, HIGH, 30000);   // 超时 30ms
+  return t == 0 ? 400 : t / 58;          // cm，读不到当很远
+}
+
+void setup(){
+  Serial.begin(115200);
+  int mpins[]={AIN1,AIN2,PWMA,BIN1,BIN2,PWMB,STBY};
+  for(int p:mpins) pinMode(p,OUTPUT);
+  digitalWrite(STBY, HIGH);
+  pinMode(TRIG, OUTPUT);
+  pinMode(ECHO, INPUT);
+}
+
+void loop(){
+  long d = readDistance();
+  Serial.print("Distance: "); Serial.print(d); Serial.println(" cm");
+
+  if(d &gt; 30){
+    forward(180);              // 前方开阔，前进
+  } else {
+    stopAll();   delay(200);
+    back(180);   delay(300);   // 后退一点
+    right(180);  delay(400);   // 右转躲避
+    stopAll();   delay(100);
+  }
+  delay(50);
+}</pre>
+</section>
+
+<!-- 11 Wi-Fi -->
+<section class="slide">
+  <h2>拓展 · Wi-Fi 联网</h2>
+  <p>ESP32-S3 内置 Wi-Fi，先用最简单例子确认能上网。</p>
+<pre>#include &lt;WiFi.h&gt;
+const char* ssid     = "YOUR_SSID";
+const char* password = "YOUR_PASSWORD";
+
+void setup(){
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting");
+  while(WiFi.status() != WL_CONNECTED){ Serial.print("."); delay(500); }
+  Serial.println();
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+}
+void loop(){}</pre>
+  <ul>
+    <li>看到串口打印的 <b>IP 地址</b> = 联网成功</li>
+    <li>手机 / 电脑和小车必须在<b>同一个 Wi-Fi</b>（否则打不开网页）</li>
+    <li>不支持 5GHz，请用 <b>2.4GHz</b> 频段</li>
+  </ul>
+</section>
+
+<!-- 12 摄像头 -->
+<section class="slide">
+  <h2>拓展 · 摄像头 CameraWebServer 远程拍照</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>操作步骤</h3>
+      <div class="step"><div class="num">1</div><div>选 <b>XIAO_ESP32S3</b>，开启 <b>PSRAM</b></div></div>
+      <div class="step"><div class="num">2</div><div>File → Examples → <b>ESP32 → Camera → CameraWebServer</b></div></div>
+      <div class="step"><div class="num">3</div><div>把摄像头型号宏改为：<br><code>#define CAMERA_MODEL_XIAO_ESP32S3</code></div></div>
+      <div class="step"><div class="num">4</div><div>填入 <b>ssid / password</b></div></div>
+      <div class="step"><div class="num">5</div><div>上传 → 打开<b>串口监视器 115200</b></div></div>
+      <div class="step"><div class="num">6</div><div>看到 <code>Camera Ready! Use 'http://192.168.x.x'</code></div></div>
+      <div class="step"><div class="num">7</div><div>浏览器打开该网址 → 点 <b>Start Stream</b> / <b>Get Still</b> 远程拍照 📸</div></div>
+    </div>
+    <div class="card">
+      <h3>常见坑</h3>
+      <ul>
+        <li>❗ 一定要 <b>Sense 版本</b>，普通版无摄像头</li>
+        <li>❗ 插好 <b>FPC 排线</b>，蓝色朝上</li>
+        <li>❗ PSRAM 没开会一直重启</li>
+        <li>❗ 电脑和 XIAO 必须<b>同一 2.4GHz Wi-Fi</b></li>
+        <li>❗ 首次上传：按住 BOOT 键再插 USB 进入下载模式</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 13 一天学习路径 -->
+<section class="slide">
+  <h2>一天学习路径</h2>
+  <table>
+    <tr><th>时段</th><th>时长</th><th>主题</th><th>产出</th></tr>
+    <tr><td colspan="4" style="text-align:center;color:var(--accent);background:#0b1220">🌅 上午 · 基础与主线</td></tr>
+    <tr>
+      <td>09:00–10:00</td><td>1h</td>
+      <td>认识电机 + TB6612<br>认识 SG90 舵机</td>
+      <td>能说清 PWM、H 桥、180°/360° 舵机差别</td>
+    </tr>
+    <tr>
+      <td>10:00–10:45</td><td>0.75h</td>
+      <td>学会看原理图<br>识别底板 & Sense 板引脚</td>
+      <td>能在 PDF 上指出电机 / 舵机接口位置</td>
+    </tr>
+    <tr>
+      <td>10:45–12:00</td><td>1.25h</td>
+      <td>让小车跑起来<br>（前进/后退/转弯函数）</td>
+      <td>小车能按预设路径自主跑动</td>
+    </tr>
+    <tr><td colspan="4" style="text-align:center;color:var(--muted)">☕ 午休 12:00–13:30</td></tr>
+    <tr><td colspan="4" style="text-align:center;color:var(--accent);background:#0b1220">🚀 下午 · 进阶开发</td></tr>
+    <tr>
+      <td>13:30–15:00</td><td>1.5h</td>
+      <td>🎮 <b>蓝牙控制小车（主线 A）</b><br>写 BLE 代码 + 手机 App 联调</td>
+      <td>手机遥控小车前后左右</td>
+    </tr>
+    <tr>
+      <td>15:00–16:00</td><td>1h</td>
+      <td>📡 <b>超声波避障小车（主线 B）</b><br>接线 + 距离检测 + 自动避障</td>
+      <td>小车遇到障碍能自动停车/转向</td>
+    </tr>
+    <tr>
+      <td>16:00–16:20</td><td>0.3h</td>
+      <td>Wi-Fi 联网 Demo</td>
+      <td>串口打印 IP，同网络电脑能 ping 通</td>
+    </tr>
+    <tr>
+      <td>16:20–17:10</td><td>0.8h</td>
+      <td>摄像头 CameraWebServer<br>网页远程拍照</td>
+      <td>浏览器打开 IP，能实时预览 + 拍照</td>
+    </tr>
+    <tr>
+      <td>17:10–17:30</td><td>0.3h</td>
+      <td>总结 & 拓展方向</td>
+      <td>BLE + 超声波 + 摄像头合并、自定义 App</td>
+    </tr>
+  </table>
+</section>
+
+<!-- 14 结束页 -->
+<section class="slide cover">
+  <h1>Thanks 🎉</h1>
+  <div class="sub">动手多于看图，让小车真正跑起来。</div>
+  <div style="margin-top:24px;color:var(--muted);font-size:16px">
+    ← / → 或空格切换页面 · F 键全屏
+  </div>
+</section>
+
+<!-- 底栏导航 -->
+<div class="footer">
+  <div><span id="pageNo">1</span> / <span id="pageTotal">16</span> · 智能小车进阶开发</div>
+  <div class="nav">
+    <button onclick="go(-1)">◀ 上一页</button>
+    <button onclick="go(1)">下一页 ▶</button>
+    <button onclick="toggleFS()">全屏</button>
+  </div>
+</div>
+
+</div>
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let idx = 0;
+  document.getElementById('pageTotal').textContent = slides.length;
+  function show(n){
+    idx = (n + slides.length) % slides.length;
+    slides.forEach((s,i)=>s.classList.toggle('active', i===idx));
+    document.getElementById('pageNo').textContent = idx + 1;
+  }
+  function go(d){ show(idx + d); }
+  function toggleFS(){
+    if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  }
+  document.addEventListener('keydown', e=>{
+    if(['ArrowRight','PageDown',' '].includes(e.key)) go(1);
+    else if(['ArrowLeft','PageUp'].includes(e.key)) go(-1);
+    else if(e.key==='Home') show(0);
+    else if(e.key==='End') show(slides.length-1);
+    else if(e.key==='f' || e.key==='F') toggleFS();
+  });
+</script>
+</body>
+</html>

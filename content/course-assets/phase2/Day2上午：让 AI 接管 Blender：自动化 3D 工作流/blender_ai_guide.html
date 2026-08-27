@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blender + AI 指导手册</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            line-height: 1.8;
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            margin-bottom: 50px;
+            background: linear-gradient(135deg, rgba(243,156,18,0.1), rgba(155,89,182,0.1));
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .hero h1 {
+            font-size: 2.5em;
+            background: linear-gradient(90deg, #f39c12, #e74c3c, #9b59b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .hero p { color: #aaa; font-size: 1.1em; }
+        .card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 35px;
+            margin-bottom: 35px;
+        }
+        .card h2 {
+            color: #f39c12;
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .card h3 {
+            color: #3498db;
+            font-size: 1.2em;
+            margin: 25px 0 15px 0;
+            padding-left: 15px;
+            border-left: 3px solid #3498db;
+        }
+        .code-block {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 0.85em;
+            overflow-x: auto;
+            position: relative;
+        }
+        .code-block::before {
+            content: attr(data-lang);
+            position: absolute;
+            top: 10px; right: 15px;
+            font-size: 0.7em;
+            color: #8b949e;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .code-block code { color: #e6edf3; }
+        .code-block .comment { color: #8b949e; }
+        .tip, .warning, .info {
+            padding: 18px 22px;
+            border-radius: 0 10px 10px 0;
+            margin: 20px 0;
+            font-size: 0.95em;
+        }
+        .tip {
+            background: rgba(243,156,18,0.08);
+            border-left: 4px solid #f39c12;
+        }
+        .tip::before { content: "💡 "; font-weight: bold; }
+        .warning {
+            background: rgba(231,76,60,0.08);
+            border-left: 4px solid #e74c3c;
+        }
+        .warning::before { content: "⚠️ "; font-weight: bold; }
+        .info {
+            background: rgba(52,152,219,0.08);
+            border-left: 4px solid #3498db;
+        }
+        .info::before { content: "ℹ️ "; font-weight: bold; }
+        .step-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            padding: 20px 0;
+        }
+        .step-item {
+            display: flex;
+            gap: 20px;
+            padding: 20px 0;
+            position: relative;
+        }
+        .step-item:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            left: 20px;
+            top: 50px;
+            bottom: -10px;
+            width: 2px;
+            background: linear-gradient(180deg, #f39c12, transparent);
+        }
+        .step-num {
+            width: 40px; height: 40px;
+            min-width: 40px;
+            background: linear-gradient(135deg, #f39c12, #e74c3c);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 0.9em;
+            z-index: 1;
+        }
+        .step-content { flex: 1; }
+        .step-content h4 { color: #fff; margin-bottom: 8px; font-size: 1.1em; }
+        .step-content p { color: #aaa; font-size: 0.95em; }
+        .footer {
+            text-align: center;
+            padding: 50px 0 30px;
+            color: #666;
+            font-size: 0.9em;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            margin-top: 50px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+        th {
+            background: rgba(255,255,255,0.05);
+            padding: 14px;
+            text-align: left;
+            color: #f39c12;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+        td {
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Blender + AI 指导手册</h1>
+            <p>基于 dcc-mcp-blender 的完整安装与使用指南</p>
+        </div>
+
+        <div class="card">
+            <h2>📦 前置要求</h2>
+            <ul style="padding-left: 20px; color: #ccc;">
+                <li>Blender 4.2+ 或 5.0（推荐最新版）</li>
+                <li>Claude Code（命令行版）</li>
+                <li>Python 3.10+（Blender 自带）</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>🔧 安装步骤</h2>
+
+            <h3>Step 1：下载插件</h3>
+            <p>前往 GitHub Releases 下载对应平台的 ZIP 文件：</p>
+            <div class="code-block" data-lang="text">
+                <code>https://github.com/dcc-mcp/dcc-mcp-blender/releases</code>
+            </div>
+            <p>下载对应你操作系统的文件：</p>
+            <table>
+                <tr><th>操作系统</th><th>文件名</th></tr>
+                <tr><td>Windows</td><td><code>dcc_mcp_blender_addon_win64_vX.Y.Z.zip</code></td></tr>
+                <tr><td>macOS</td><td><code>dcc_mcp_blender_addon_macos_vX.Y.Z.zip</code></td></tr>
+                <tr><td>Linux</td><td><code>dcc_mcp_blender_addon_linux_vX.Y.Z.zip</code></td></tr>
+            </table>
+
+            <h3>Step 2：安装插件（Blender 4.2+）</h3>
+            <div class="step-flow">
+                <div class="step-item">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <h4>打开 Blender → Edit → Preferences</h4>
+                        <p>确保 Blender 版本 ≥ 4.2</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        <h4>切换到 Extensions 标签页</h4>
+                        <p>点击 <strong>Install from Disk…</strong>（从磁盘安装）</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        <h4>选择下载的 ZIP 文件</h4>
+                        <p>Blender 会自动解压并安装依赖到隔离环境</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">4</div>
+                    <div class="step-content">
+                        <h4>勾选启用 DCC MCP Blender</h4>
+                        <p>安装完成后，在列表中找到并勾选启用</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">5</div>
+                    <div class="step-content">
+                        <h4>确认服务启动</h4>
+                        <p>MCP Server 会自动在 <code>http://127.0.0.1:8765</code> 启动</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="warning">
+                <strong>注意：</strong>这是 Blender 4.2+ 的 Extension 格式，包含 <code>blender_manifest.toml</code>。不要按老方法走 Edit → Preferences → Add-ons → Install，那会报错！
+            </div>
+
+            <h3>Step 3：配置 Claude Code</h3>
+            <p>在 Claude Code 对话中直接输入以下命令：</p>
+            <div class="code-block" data-lang="bash">
+                <code><span class="comment"># 添加 Blender MCP Server（HTTP 传输模式）</span>
+claude mcp add --transport http blender http://127.0.0.1:8765/mcp
+
+<span class="comment"># 如果提示已存在，先删除再添加</span>
+claude mcp remove blender
+claude mcp add --transport http blender http://127.0.0.1:8765/mcp
+
+<span class="comment"># 验证是否添加成功</span>
+claude mcp list</code>
+            </div>
+            <div class="tip">
+                添加成功后，在 Claude Code 对话中输入 <code>你有什么工具？</code>，确认 Blender 出现且状态正常。
+            </div>
+
+            <h3>Step 4：验证连接</h3>
+            <p>确保 Blender 已打开且插件已启用，然后在 Claude Code 中输入：</p>
+            <div class="code-block" data-lang="text">
+                <code>列出当前场景中所有物体的名称和类型</code>
+            </div>
+            <p>如果 Claude 能正确返回场景信息，说明 MCP 连接成功！🎉</p>
+        </div>
+
+        <div class="card">
+            <h2>🎯 核心功能</h2>
+            <p>dcc-mcp-blender 提供 150+ 工具，覆盖 28 个 Skill 分类：</p>
+            <table>
+                <tr><th>功能类别</th><th>说明</th></tr>
+                <tr><td>场景管理</td><td>启动、打开、保存、列出、检查场景</td></tr>
+                <tr><td>物体操作</td><td>创建、删除、变换、选择、重命名、父子关系</td></tr>
+                <tr><td>网格建模</td><td>修改器、拓扑清理、三角化、合并、镜像</td></tr>
+                <tr><td>UV 操作</td><td>创建、展开、投影、打包、归一化</td></tr>
+                <tr><td>材质与纹理</td><td>创建、分配、编辑、烘焙、预设库</td></tr>
+                <tr><td>着色器节点</td><td>创建节点、连接、断开、设置参数</td></tr>
+                <tr><td>几何节点</td><td>创建节点组、分配修改器、设置输入</td></tr>
+                <tr><td>骨骼绑定</td><td>创建骨架、骨骼、约束、蒙皮、形态键</td></tr>
+                <tr><td>动画</td><td>关键帧、时间线、烘焙、姿态库</td></tr>
+                <tr><td>灯光与相机</td><td>创建、编辑属性、三点布光、HDRI</td></tr>
+                <tr><td>渲染</td><td>配置、出图、视口截图、渲染农场</td></tr>
+                <tr><td>物理模拟</td><td>刚体、布料、碰撞、缓存烘焙</td></tr>
+                <tr><td>文件交换</td><td>导入/导出 FBX/OBJ/GLTF/USD/Alembic</td></tr>
+                <tr><td>场景验证</td><td>网格、材质、动画、导出就绪检查</td></tr>
+                <tr><td>管线工具</td><td>资产元数据、项目上下文、发布清单</td></tr>
+                <tr><td>开发工具</td><td>插件诊断、模块重载、UI 截图、调试服务器</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>📝 常用指令示例</h2>
+            <div class="code-block" data-lang="text">
+                <code><span class="comment"># 场景查询</span>
+"列出当前场景中所有物体的名称、类型和位置"
+
+<span class="comment"># 创建物体</span>
+"创建一个立方体，放在场景中心，设为红色"
+
+<span class="comment"># 复杂建模</span>
+"创建一个低多边形机器人：立方体身体，圆柱四肢，球体关节，分别赋予蓝色、灰色、银色材质"
+
+<span class="comment"># 灯光设置</span>
+"设置三点布光，主光为暖色，补光为冷色，轮廓光为白色"
+
+<span class="comment"># 渲染出图</span>
+"渲染当前场景，保存为 PNG 到桌面"
+
+<span class="comment"># 导出文件</span>
+"将当前场景导出为 GLTF 格式，包含嵌入纹理"
+
+<span class="comment"># 场景优化</span>
+"分析场景，找出多边形数量最高但屏幕占比最小的物体"
+
+<span class="comment"># 拓扑清理</span>
+"清理所有网格的非流形边，删除重叠面，填充孔洞"</code>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>❓ 常见问题</h2>
+            <table>
+                <tr><th style="width:30%">问题</th><th>解决方案</th></tr>
+                <tr><td>安装 ZIP 时报错</td><td>确认下载的是 Release 里的平台 ZIP，不是源码 ZIP。去 Releases 页面下载 <code>dcc_mcp_blender_addon_xxx_vX.Y.Z.zip</code></td></tr>
+                <tr><td>Claude 找不到 Blender 工具</td><td>1. 检查 Blender 中插件是否已启用<br>2. 确认 Blender 窗口处于焦点状态<br>3. 重启 Claude Code<br>4. 检查 <code>claude mcp list</code> 是否显示 blender</td></tr>
+                <tr><td>连接超时</td><td>检查防火墙是否阻止 8765 端口；确保 Blender 窗口处于焦点状态</td></tr>
+                <tr><td>AI 生成的模型面数太多</td><td>用 Blender 的 Decimate 修改器或 Remesh 减少面数，然后手动重拓扑</td></tr>
+                <tr><td>导出 STL 后打印失败</td><td>使用 Blender 的 3D Print Toolbox 插件检查壁厚、非流形边、悬空面</td></tr>
+                <tr><td>执行脚本时一直弹授权框</td><td>在 Claude Code 中输入：<code>/claude config set autoApproveTools blender</code></td></tr>
+                <tr><td>Windows 下 uvx 报错</td><td>改用 cmd + /c 方式调用，或直接使用 HTTP URL 配置</td></tr>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>📚 参考资源</p>
+            <p style="margin-top:10px;">
+                <a href="https://github.com/dcc-mcp/dcc-mcp-blender" style="color:#3498db; text-decoration:none;">dcc-mcp-blender GitHub</a> ·
+                <a href="https://github.com/dcc-mcp/dcc-mcp-blender/blob/main/src/dcc_mcp_blender/skills/SKILLS_INDEX.md" style="color:#3498db; text-decoration:none;">SKILLS_INDEX.md</a>
+            </p>
+            <p style="margin-top:20px; color:#555;">Blender + AI 指导手册 | 2026</p>
+        </div>
+    </div>
+</body>
+</html>

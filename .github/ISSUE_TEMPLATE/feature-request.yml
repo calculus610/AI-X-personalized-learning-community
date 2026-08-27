@@ -1,0 +1,57 @@
+name: Feature request / 功能建议
+description: Propose a learner-centered improvement with a clear use case. / 从真实学习场景出发提出改进建议。
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Start with the learner or educator problem, not only the proposed implementation.
+
+        请先说明学习者或教师遇到的问题，不要只描述想要的实现。
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting / 提交前
+      options:
+        - label: I searched existing issues and pull requests. / 我已搜索现有 Issue 和 Pull Request。
+          required: true
+        - label: I can describe a real use case and who benefits. / 我可以说明真实使用场景和受益者。
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or opportunity / 问题或机会
+      description: Who encounters it, and in which learning context? / 谁在什么学习场景中遇到了它？
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome / 期望结果
+      description: Describe the useful outcome without prescribing every implementation detail. / 说明有价值的结果，不必预先限定所有实现细节。
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered / 已考虑的替代方案
+  - type: dropdown
+    id: area
+    attributes:
+      label: Primary area / 主要范围
+      options:
+        - Learning experience / 学习体验
+        - Course content / 课程内容
+        - Frontend / 前端
+        - Backend or API / 后端或 API
+        - Data or evidence / 数据或证据
+        - Docker or local setup / Docker 或本地安装
+        - Documentation / 文档
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context / 其他信息

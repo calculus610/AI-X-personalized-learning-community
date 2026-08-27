@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Text-to-CAD 实战：从 Prompt 到 Loop Engineering</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: #f8fafc;
+    color: #334155;
+    line-height: 1.8;
+    font-size: 15px;
+  }
+  a { color: #2563eb; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "SF Mono", Monaco, monospace;
+    font-size: 0.9em;
+    color: #0f172a;
+  }
+  kbd {
+    background: #e2e8f0;
+    border: 1px solid #cbd5e1;
+    border-bottom: 2px solid #94a3b8;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.85em;
+  }
+
+  /* 顶部导航 */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .topbar-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  .menu-toggle {
+    display: block;
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+  .menu-toggle:hover { background: #f1f5f9; }
+  @media(min-width: 1024px) { .menu-toggle { display: none; } }
+
+  /* 主体布局 */
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    gap: 32px;
+  }
+
+  /* 侧边导航 */
+  .sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    display: none;
+  }
+  .sidebar.open { display: block; }
+  @media(min-width: 1024px) {
+    .sidebar { display: block !important; position: sticky; top: 84px; height: calc(100vh - 100px); overflow-y: auto; }
+  }
+  @media(max-width: 1023px) {
+    .sidebar {
+      position: fixed;
+      top: 60px; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.98);
+      z-index: 99;
+      width: 100%;
+      padding: 20px;
+      overflow-y: auto;
+    }
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #475569;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    transition: all 0.2s;
+    margin-bottom: 2px;
+  }
+  .nav-item:hover { background: #f1f5f9; color: #0f172a; }
+  .nav-item.active { background: #2563eb; color: #fff; }
+  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .nav-group-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 16px 14px 8px;
+  }
+
+  /* 主内容区 */
+  .main {
+    flex: 1;
+    min-width: 0;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+    padding: 32px 28px;
+  }
+  @media(min-width: 640px) { .main { padding: 48px 40px; } }
+
+  /* 章节 */
+  .section { margin-bottom: 56px; scroll-margin-top: 20px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #dbeafe;
+  }
+  .section-icon {
+    width: 40px; height: 40px;
+    border-radius: 8px;
+    background: #eff6ff;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .section-icon svg { width: 22px; height: 22px; color: #2563eb; }
+  .section-title { font-size: 24px; font-weight: 700; color: #0f172a; }
+  .section-desc { color: #64748b; font-size: 15px; margin-top: -16px; margin-bottom: 24px; }
+
+  /* 科普卡片 */
+  .concept-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 16px 0;
+  }
+  .concept-card h4 {
+    font-size: 17px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .concept-card p { margin-bottom: 10px; color: #475569; }
+  .concept-card p:last-child { margin-bottom: 0; }
+
+  /* 对比表格 */
+  .compare-table { overflow-x: auto; margin: 16px 0; }
+  .compare-table table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .compare-table th, .compare-table td { border: 1px solid #e2e8f0; padding: 12px 16px; text-align: left; }
+  .compare-table th { background: #f1f5f9; font-weight: 600; color: #0f172a; }
+  .compare-table td { color: #475569; }
+  .compare-table tr:nth-child(even) td { background: #f8fafc; }
+
+  /* 步骤 */
+  .step { margin-bottom: 28px; }
+  .step-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 12px;
+  }
+  .step-num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: #2563eb;
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px;
+    flex-shrink: 0;
+  }
+  .step-title { font-size: 17px; font-weight: 600; color: #1e293b; }
+  .step-body { padding-left: 44px; }
+  .step-body p { margin-bottom: 10px; }
+
+  /* 提示框 */
+  .box { border-radius: 10px; padding: 16px 20px; margin: 14px 0; font-size: 14px; }
+  .box-title { font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .box p { margin-bottom: 6px; }
+  .box p:last-child { margin-bottom: 0; }
+  .box-info    { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+  .box-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+  .box-tip     { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+  .box-warning { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+  .box-purple  { background: #f5f3ff; border: 1px solid #ddd6fe; color: #5b21b6; }
+
+  /* 代码块 */
+  .code-wrap { position: relative; margin: 12px 0; }
+  .code-header {
+    background: #1e293b;
+    color: #94a3b8;
+    font-size: 12px;
+    padding: 8px 16px;
+    border-radius: 8px 8px 0 0;
+    font-family: monospace;
+    border-bottom: 1px solid #334155;
+  }
+  pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 16px 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: "SF Mono", Monaco, monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    position: relative;
+  }
+  pre.has-header { border-radius: 0 0 8px 8px; }
+  .copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #334155;
+    color: #cbd5e1;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .code-wrap:hover .copy-btn { opacity: 1; }
+  .copy-btn:hover { background: #475569; }
+  .copy-btn.copied { background: #059669; color: #fff; }
+
+  /* 零件卡片 */
+  .part-card {
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+    transition: border-color 0.2s;
+  }
+  .part-card:hover { border-color: #93c5fd; }
+  .part-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .part-badge {
+    background: #2563eb;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .part-name { font-size: 18px; font-weight: 700; color: #0f172a; }
+  .part-img {
+    width: 100%;
+    max-width: 400px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    margin: 12px 0;
+  }
+
+  /* 验收 */
+  .checkpoint {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f0fdf4;
+    border: 2px solid #86efac;
+    border-radius: 12px;
+  }
+  .checkpoint-header {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 10px;
+    font-weight: 700;
+    color: #15803d;
+  }
+  .checkpoint ul { margin: 0; padding-left: 20px; }
+  .checkpoint li { margin-bottom: 4px; color: #166534; font-size: 14px; }
+
+  /* 流程图 */
+  .flow-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 10px;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .flow-item {
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    color: #334155;
+  }
+  .flow-arrow { color: #94a3b8; font-size: 18px; }
+
+  /* 列表 */
+  ul.checklist { list-style: none; padding: 0; }
+  ul.checklist li {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0;
+  }
+  ul.checklist svg { width: 20px; height: 20px; color: #22c55e; flex-shrink: 0; margin-top: 2px; }
+
+  /* 页脚 */
+  .footer { text-align: center; font-size: 13px; color: #94a3b8; margin-top: 48px; padding-top: 24px; border-top: 1px solid #e2e8f0; }
+
+  /* 打印 */
+  @media print {
+    .topbar, .sidebar, .menu-toggle, .copy-btn { display: none !important; }
+    .main { box-shadow: none; border: none; padding: 0; }
+    body { background: #fff; }
+    .section { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 顶部导航栏 -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
+      Text-to-CAD 实战课
+      <span style="font-size:14px;color:#94a3b8;font-weight:400;">| 从 Prompt 到 Loop Engineering</span>
+    </div>
+    <button class="menu-toggle" onclick="toggleMenu()" id="menuBtn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="container">
+  <!-- 侧边导航 -->
+  <nav class="sidebar" id="sidebar">
+    <div style="position:sticky;top:0;">
+      <div class="nav-group-title">课前科普</div>
+      <button class="nav-item active" onclick="scrollToSec('what-is-3d',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        3D 建模是什么
+      </button>
+      <button class="nav-item" onclick="scrollToSec('what-is-ttc',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Text-to-CAD 是什么
+      </button>
+      <button class="nav-item" onclick="scrollToSec('what-is-skills',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 1 .73-2.73l.22-.38a2 2 0 0 0-.73-2.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        Skills 是什么
+      </button>
+      <button class="nav-item" onclick="scrollToSec('problem',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+        发现：AI 不是完美的
+      </button>
+      <button class="nav-item" onclick="scrollToSec('loop-intro',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 2.1l4 1.9-4 1.9"/><path d="M3 4.1l4 1.9-4 1.9"/><path d="M21 4H11"/><path d="M13 20H3"/><path d="M7 10l4 1.9-4 1.9"/><path d="M17 14v-4"/><path d="M17 14h-4"/></svg>
+        Loop Engineering
+      </button>
+
+      <div class="nav-group-title">实战任务</div>
+      <button class="nav-item" onclick="scrollToSec('task-prep',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 1 .73-2.73l.22-.38a2 2 0 0 0-.73-2.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        环境准备
+      </button>
+      <button class="nav-item" onclick="scrollToSec('part1',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+        零件 1：校准块
+      </button>
+      <button class="nav-item" onclick="scrollToSec('part2',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+        零件 2：法兰盘
+      </button>
+      <button class="nav-item" onclick="scrollToSec('part3',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M5 12h16"/></svg>
+        零件 3：L 支架
+      </button>
+      <button class="nav-item" onclick="scrollToSec('part4',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="12" x2="18" y2="12"/><line x1="6" y1="8" x2="18" y2="8"/><line x1="6" y1="16" x2="12" y2="16"/></svg>
+        零件 4：阶梯轴
+      </button>
+      <button class="nav-item" onclick="scrollToSec('part5',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+        零件 5：外壳
+      </button>
+      <button class="nav-item" onclick="scrollToSec('deliverables',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        交付物清单
+      </button>
+    </div>
+  </nav>
+
+  <!-- 主内容 -->
+  <main class="main">
+
+    <!-- ==================== 课前科普：3D 建模 ==================== -->
+    <section class="section" id="what-is-3d">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        </div>
+        <h2 class="section-title">3D 建模：从网格到参数化</h2>
+      </div>
+      <p class="section-desc">在让 AI 帮你建模之前，先搞清楚"3D 文件"到底有几种，为什么工程师偏爱 STEP。</p>
+
+      <div class="concept-card">
+        <h4>🧊 两种 3D 文件的本质区别</h4>
+        <div class="compare-table">
+          <table>
+            <tr><th>特性</th><th>STL / OBJ（三角网格）</th><th>STEP（参数化 CAD）</th></tr>
+            <tr><td>本质</td><td>一堆三角形拼成的"壳"</td><td>带几何参数的工程描述</td></tr>
+            <tr><td>尺寸</td><td>固定，无法精确修改</td><td>可编辑，改一个数字全更新</td></tr>
+            <tr><td>圆孔</td><td>多边形近似，不是真圆</td><td>数学意义上的精确圆</td></tr>
+            <tr><td>壁厚</td><td>不知道，只有表面</td><td>明确记录，可测量</td></tr>
+            <tr><td>用途</td><td>3D 打印、游戏、渲染</td><td>机械设计、数控加工、装配</td></tr>
+            <tr><td>比喻</td><td>一张照片（能看不能改）</td><td>一份图纸（能改能生产）</td></tr>
+          </table>
+        </div>
+        <p><strong>结论</strong>：STL 是"给消费者看的"，STEP 是"给工程师用的"。Text-to-CAD 输出 STEP，意味着 AI 生成的零件可以直接进入工厂生产流程。</p>
+      </div>
+
+      <div class="concept-card">
+        <h4>🎨 传统 3D 建模是怎么做的？</h4>
+        <p>工程师打开 SolidWorks / CATIA / Fusion 360，按以下流程：</p>
+        <div class="flow-box">
+          <span class="flow-item">画草图</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-item">拉伸/旋转</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-item">打孔/倒角</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-item">装配</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-item">导出 STEP</span>
+        </div>
+        <p>一个简单零件需要 30 分钟，复杂零件需要几天。而且每一步都需要人脑理解设计意图。</p>
+      </div>
+    </section>
+
+    <!-- ==================== 课前科普：Text-to-CAD ==================== -->
+    <section class="section" id="what-is-ttc">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <h2 class="section-title">Text-to-CAD：AI 翻译官</h2>
+      </div>
+      <p class="section-desc">你说人话，AI 出图纸。不是出图片，是出真正的工程文件。</p>
+
+      <div class="concept-card">
+        <h4>🤖 什么是 Text-to-CAD？</h4>
+        <p>Text-to-CAD 是 AI 辅助设计的新范式。你把"我要一个带四个螺丝孔的矩形块"这类自然语言丢给它，它输出的是 <code>.step</code> 文件——不是渲染图，不是网格模型，而是工程师能直接拿去 CNC 加工、3D 打印、装配验证的<strong>参数化 CAD 模型</strong>。</p>
+        <div class="flow-box">
+          <span class="flow-item">自然语言</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-item" style="background:#eff6ff;border-color:#93c5fd;">Text-to-CAD</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-item">STEP 文件</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-item">制造/装配</span>
+        </div>
+      </div>
+
+      <div class="concept-card">
+        <h4>📐 为什么 Prompt 要像工程图纸语言？</h4>
+        <p>AI 听懂了"意思"，但不一定精确执行"尺寸"。比如你说"做一个大一点的孔"，AI 不知道"大一点"是 1mm 还是 10mm。</p>
+        <div class="compare-table">
+          <table>
+            <tr><th>❌ 模糊的 Prompt</th><th>✅ 精确的 Prompt</th></tr>
+            <tr><td><code>"做一个方块"</code></td><td><code>"Create a 100 x 60 x 20 mm block"</code></td></tr>
+            <tr><td><code>"打几个孔"</code></td><td><code>"four 8 mm vertical through-holes at X=±35, Y=±20"</code></td></tr>
+            <tr><td><code>"倒个角"</code></td><td><code>"2 mm chamfer on the top outer perimeter only"</code></td></tr>
+          </table>
+        </div>
+        <p><strong>原则</strong>：带单位（mm）、带数量、带位置、带约束。越像工程图纸，AI 越准。</p>
+      </div>
+
+      <div class="concept-card">
+        <h4>🔗 项目来源</h4>
+        <p>本课程基于 <a href="https://github.com/earthtojake/text-to-cad" target="_blank">earthtojake/text-to-cad</a> 开源项目。这是一个 <strong>Skills 库</strong>——不是独立软件，而是给 Claude Code / Codex 等 AI Agent 用的 CAD 能力插件。</p>
+      </div>
+    </section>
+
+    <!-- ==================== 课前科普：Skills ==================== -->
+    <section class="section" id="what-is-skills">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 1 .73-2.73l.22-.38a2 2 0 0 0-.73-2.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <h2 class="section-title">Skills：给 AI 装"扳手"</h2>
+      </div>
+      <p class="section-desc">Claude Code 本身不会画 CAD。Skills 是它的"外挂工具箱"。</p>
+
+      <div class="concept-card">
+        <h4>🧰 什么是 Skills？</h4>
+        <p>Skills 是 Anthropic 提出的<strong>Agent 工具插件系统</strong>。你可以把它理解为：Claude Code 是一个聪明的工人，但它出厂时只有一双手。Skills 就是给它配的扳手、螺丝刀、卡尺——让它能调用外部专业工具。</p>
+        <p>Text-to-CAD 就是其中一个 Skill。安装后，Claude Code 就能：</p>
+        <ul class="checklist">
+          <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>把自然语言翻译成 CAD 代码</span></li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>生成 STEP / STL / DXF 等工程文件</span></li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>检索标准件（螺丝、轴承、电机）</span></li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>生成机器人 URDF 描述文件</span></li>
+        </ul>
+      </div>
+
+      <div class="concept-card">
+        <h4>📦 text-to-cad 包含哪些 Skills？</h4>
+        <div class="compare-table">
+          <table>
+            <tr><th>Skill</th><th>功能</th></tr>
+            <tr><td><code>cad</code></td><td>生成/编辑 CAD 模型，输出 STEP</td></tr>
+            <tr><td><code>cad-viewer</code></td><td>浏览器预览 3D 模型</td></tr>
+            <tr><td><code>step.parts</code></td><td>检索标准件（螺丝、轴承等）</td></tr>
+            <tr><td><code>dxf</code></td><td>生成 2D 工程图（激光切割用）</td></tr>
+            <tr><td><code>urdf</code></td><td>生成机器人结构文件</td></tr>
+            <tr><td><code>gcode</code></td><td>3D 打印切片生成 G-code</td></tr>
+            <tr><td><code>bambu-labs</code></td><td>控制 Bambu Lab 打印机</td></tr>
+          </table>
+        </div>
+        <p>本课程主要用 <code>cad</code> 和 <code>cad-viewer</code> 两个 Skill。</p>
+      </div>
+
+      <div class="concept-card">
+        <h4>⚡ 为什么不需要 API Key？</h4>
+        <p>因为 Claude Code 自己就是 LLM。Skills 只是让 Claude Code 能调用外部工具（如生成 CAD 的代码），推理过程由 Claude Code 自己完成，不需要你再配 OpenAI Key。</p>
+        <p>安装方式也很简单：</p>
+        <div class="code-wrap">
+          <pre><code>npm install -g @anthropic-ai/skills
+npx skills install earthtojake/text-to-cad</code></pre>
+          <button class="copy-btn" onclick="copyCode(this)">复制</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 发现问题 ==================== -->
+    <section class="section" id="problem">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+        </div>
+        <h2 class="section-title">发现：AI 不是完美的</h2>
+      </div>
+      <p class="section-desc">先动手生成一个零件，你会发现问题——这就是 Loop Engineering 的出发点。</p>
+
+      <div class="concept-card">
+        <h4>🔬 先做个实验</h4>
+        <p>运行以下命令，生成一个"20mm 立方体"：</p>
+        <div class="code-wrap">
+          <pre><code>npx skills run cad --prompt "Create a 20 mm cube" --output ./cube.step</code></pre>
+          <button class="copy-btn" onclick="copyCode(this)">复制</button>
+        </div>
+        <p>然后用 FreeCAD 打开测量。你大概率会发现：</p>
+        <ul class="checklist">
+          <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>边长不是精确的 20.00mm，可能是 19.85 或 20.12</span></li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>如果带孔，孔径可能偏差 0.5mm 以上</span></li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>复杂特征（倒角、加强筋）可能缺失或位置不对</span></li>
+        </ul>
+        <p><strong>问题出现了</strong>：AI 听懂了你的意思，但执行有误差。对于工程应用来说，1mm 的误差可能就是废品。</p>
+      </div>
+
+      <div class="concept-card">
+        <h4>😤 手动修正的循环</h4>
+        <p>传统做法是：你测量 → 写修正指令 → 再生成 → 再测量……</p>
+        <div style="background:#0f172a;color:#e2e8f0;padding:16px 20px;border-radius:8px;font-family:monospace;font-size:13px;line-height:1.8;margin:12px 0;">
+          <p style="color:#94a3b8;"># 第一轮</p>
+          <p>你: "生成一个 50mm 立方体，中心 20mm 通孔"</p>
+          <p>AI: 生成零件（孔径 19.8mm）</p>
+          <p style="color:#94a3b8;"># 你打开 FreeCAD 测量，发现孔小了</p>
+          <p style="color:#94a3b8;"># 第二轮</p>
+          <p>你: "孔应该是 20mm 直径，不是 19.8，请修正"</p>
+          <p>AI: 生成零件（孔径 20.2mm）</p>
+          <p style="color:#94a3b8;"># 还是不准，再改……</p>
+        </div>
+        <p>你变成了 <strong>"发球机"</strong>——不断给 AI 喂指令，AI 被动执行。批量生成 10 个零件时，这非常痛苦。</p>
+      </div>
+    </section>
+
+    <!-- ==================== Loop Engineering ==================== -->
+    <section class="section" id="loop-intro">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 2.1l4 1.9-4 1.9"/><path d="M3 4.1l4 1.9-4 1.9"/><path d="M21 4H11"/><path d="M13 20H3"/><path d="M7 10l4 1.9-4 1.9"/><path d="M17 14v-4"/><path d="M17 14h-4"/></svg>
+        </div>
+        <h2 class="section-title">Loop Engineering：让 AI 自己循环改到合格</h2>
+      </div>
+      <p class="section-desc">2026 年 AI 工程化的新范式——你设计循环，AI 当运动员。</p>
+
+      <div class="concept-card">
+        <h4>🔄 三层演进</h4>
+        <div class="compare-table">
+          <table>
+            <tr><th>层级</th><th>你做什么</th><th>AI 做什么</th></tr>
+            <tr><td><strong>Prompt Engineering</strong></td><td>写一句好指令</td><td>给一次答案</td></tr>
+            <tr><td><strong>Harness Engineering</strong></td><td>给 Agent 工具和环境</td><td>在约束内自主调用工具</td></tr>
+            <tr><td><strong>Loop Engineering</strong></td><td>设计"会自己下指令的系统"</td><td>自主循环：行动→观察→推理→重来，直到达标</td></tr>
+          </table>
+        </div>
+        <p><strong>本质</strong>：你不再是 AI 的"发球机"，而是设计一个 <code>while</code> 循环——AI 自己判断零件是否合格，不合格就自动改，改到对为止。</p>
+      </div>
+
+      <div class="concept-card">
+        <h4>🛠️ Text-to-CAD 的 Loop 长什么样？</h4>
+        <div style="background:#0f172a;color:#e2e8f0;padding:16px 20px;border-radius:8px;font-family:monospace;font-size:13px;line-height:1.8;margin:12px 0;">
+          <p style="color:#94a3b8;"># 你写的验收标准</p>
+          <p>target = {"边长": 50, "孔径": 20, "误差": "≤2%"}</p>
+          <p style="color:#94a3b8;"># AI 自己循环</p>
+          <p>for i in range(5):          <span style="color:#94a3b8;"># 最多 5 次</span></p>
+          <p>    step = generate_cad(prompt)      <span style="color:#94a3b8;"># 生成</span></p>
+          <p>    actual = measure(step)           <span style="color:#94a3b8;"># 测量</span></p>
+          <p>    error = compare(target, actual)  <span style="color:#94a3b8;"># 对比</span></p>
+          <p>    if error <= 2%:</p>
+          <p>        break  <span style="color:#94a3b8;"># 合格，停</span></p>
+          <p>    else:</p>
+          <p>        prompt = f"修正：偏差 {error}%，请调整"</p>
+          <p>        <span style="color:#94a3b8;"># 继续下一轮</span></p>
+        </div>
+        <p><strong>你只需做一件事</strong>：设定验收标准（如"尺寸误差 ≤ 2%"）。剩下的，AI 自己搞定。</p>
+      </div>
+
+      <div class="concept-card">
+        <h4>🧩 Loop 的六原语</h4>
+        <p>设计一个 CAD Loop，需要这六个组件：</p>
+        <div class="compare-table">
+          <table>
+            <tr><th>原语</th><th>作用</th><th>CAD 场景示例</th></tr>
+            <tr><td><strong>指令</strong></td><td>Loop 要达成的目标</td><td>"生成 50mm 立方体，误差 ≤ 2%"</td></tr>
+            <tr><td><strong>工具</strong></td><td>模型能调用的能力</td><td>text-to-cad、FreeCAD 测量、尺寸对比</td></tr>
+            <tr><td><strong>上下文</strong></td><td>每轮注入的信息</td><td>上一轮 STEP、测量结果、修正历史</td></tr>
+            <tr><td><strong>记忆</strong></td><td>跨轮次状态积累</td><td>记录每轮目标/实际尺寸、修正指令</td></tr>
+            <tr><td><strong>终止</strong></td><td>什么时候停</td><td>误差 ≤ 2% 或迭代达 5 次上限</td></tr>
+            <tr><td><strong>评估</strong></td><td>结果校验和反馈</td><td>尺寸对比脚本输出误差百分比</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="box box-purple">
+        <div class="box-title">💡 本课的任务设计</div>
+        <p>下面的 5 个 Benchmark 零件，前 3 个用<strong>手动 Prompt</strong>生成，体验"发球机"的疲惫；后 2 个用<strong>Loop Engineering</strong>生成，感受"设好标准让 AI 自己跑"的爽感。</p>
+      </div>
+    </section>
+
+    <!-- ==================== 环境准备 ==================== -->
+    <section class="section" id="task-prep">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 1 .73-2.73l.22-.38a2 2 0 0 0-.73-2.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <h2 class="section-title">环境准备</h2>
+      </div>
+
+      <div class="step">
+        <div class="step-header"><span class="step-num">1</span><span class="step-title">确认 Node.js 18+</span></div>
+        <div class="step-body">
+          <div class="code-wrap">
+            <pre><code>node -v</code></pre>
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+          </div>
+          <p>应显示 v18.x 或更高。如果没有，去 <a href="https://nodejs.org">nodejs.org</a> 下载 LTS 版。</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header"><span class="step-num">2</span><span class="step-title">安装 Skills CLI 和 Text-to-CAD</span></div>
+        <div class="step-body">
+          <div class="code-wrap">
+            <pre><code>npm install -g @anthropic-ai/skills
+npx skills install earthtojake/text-to-cad</code></pre>
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header"><span class="step-num">3</span><span class="step-title">验证安装</span></div>
+        <div class="step-body">
+          <div class="code-wrap">
+            <pre><code>npx skills list | grep cad</code></pre>
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+          </div>
+          <p>应看到 <code>cad</code> 和 <code>cad-viewer</code>。</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-header"><span class="step-num">4</span><span class="step-title">创建工作目录</span></div>
+        <div class="step-body">
+          <div class="code-wrap">
+            <pre><code>mkdir -p text2cad-lab/benchmarks && cd text2cad-lab/benchmarks</code></pre>
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 零件 1 ==================== -->
+    <section class="section" id="part1">
+      <div class="part-card">
+        <div class="part-card-header">
+          <span class="part-badge">BENCHMARK 01</span>
+          <span class="part-name">矩形校准块（带四孔）</span>
+        </div>
+        <p style="color:#64748b;margin-bottom:12px;">Rectangular Calibration Block With Four Holes</p>
+
+        <div class="box box-info">
+          <div class="box-title">📐 零件科普</div>
+          <p>这是机械加工中最基础的"校准块"——用来验证 CNC 机床精度的标准件。它要求：</p>
+          <ul style="padding-left:20px;margin-top:8px;">
+            <li>外形尺寸精确（100×60×20mm）</li>
+            <li>四个孔的位置对称（X=±35, Y=±20）</li>
+            <li>孔径一致（8mm）</li>
+            <li>顶部外缘倒角（2mm）</li>
+          </ul>
+          <p style="margin-top:8px;"><strong>工程意义</strong>：如果 AI 连这个都做不准，更复杂的零件就更不用说了。这是 Benchmark 的"基准线"。</p>
+        </div>
+
+        <div class="step">
+          <div class="step-header"><span class="step-num">1</span><span class="step-title">生成零件</span></div>
+          <div class="step-body">
+            <div class="code-wrap">
+              <pre><code>npx skills run cad \
+  --prompt "Create a centered 100 x 60 x 20 mm block with four 8 mm vertical through-holes. Add only a 2 mm chamfer on the top outer perimeter." \
+  --output ./benchmark_01_block.step</code></pre>
+              <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header"><span class="step-num">2</span><span class="step-title">浏览器预览</span></div>
+          <div class="step-body">
+            <div class="code-wrap">
+              <pre><code>npx skills run cad-viewer --file ./benchmark_01_block.step</code></pre>
+              <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            </div>
+            <p>打开 <a href="http://localhost:8080">http://localhost:8080</a> 查看。</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header"><span class="step-num">3</span><span class="step-title">FreeCAD 测量验证（重点！）</span></div>
+          <div class="step-body">
+            <p>用 FreeCAD 打开 <code>benchmark_01_block.step</code>，测量以下尺寸并记录：</p>
+            <div class="compare-table">
+              <table>
+                <tr><th>检查项</th><th>目标值</th><th>实际值</th><th>误差</th></tr>
+                <tr><td>长 (X)</td><td>100 mm</td><td>___ mm</td><td>___ %</td></tr>
+                <tr><td>宽 (Y)</td><td>60 mm</td><td>___ mm</td><td>___ %</td></tr>
+                <tr><td>高 (Z)</td><td>20 mm</td><td>___ mm</td><td>___ %</td></tr>
+                <tr><td>孔径</td><td>8 mm</td><td>___ mm</td><td>___ %</td></tr>
+                <tr><td>孔位 X</td><td>±35 mm</td><td>___ mm</td><td>___ %</td></tr>
+                <tr><td>孔位 Y</td><td>±20 mm</td><td>___ mm</td><td>___ %</td></tr>
+                <tr><td>倒角</td><td>2 mm</td><td>___ mm</td><td>___ %</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="box box-warning">
+          <div class="box-title">📝 记录你的发现</div>
+          <p>哪些尺寸准？哪些偏差大？把误差最大的项记下来——这就是你下一轮要修正的重点。</p>
+        </div>
+
+        <div class="checkpoint">
+          <div class="checkpoint-header">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            验收标准
+          </div>
+          <ul>
+            <li><code>benchmark_01_block.step</code> 文件存在</li>
+            <li>浏览器能看到带四个孔的矩形块</li>
+            <li>FreeCAD 测量记录表已填写</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 零件 2 ==================== -->
+    <section class="section" id="part2">
+      <div class="part-card">
+        <div class="part-card-header">
+          <span class="part-badge">BENCHMARK 02</span>
+          <span class="part-name">圆形法兰盘（带螺栓孔）</span>
+        </div>
+        <p style="color:#64748b;margin-bottom:12px;">Circular Flange With Bolt-Hole Pattern</p>
+
+        <div class="box box-info">
+          <div class="box-title">📐 零件科普</div>
+          <p>法兰盘是管道、轴系连接的核心零件。它的关键特征：</p>
+          <ul style="padding-left:20px;margin-top:8px;">
+            <li>圆周均布的螺栓孔（6 个孔，60mm  bolt circle）</li>
+            <li>中心通孔（30mm，穿轴用）</li>
+            <li>外缘倒圆（避免应力集中）</li>
+          </ul>
+          <p style="margin-top:8px;"><strong>工程意义</strong>：圆周均布孔是检验 AI 几何推理能力的经典场景——它要理解"均布"、"bolt circle"、"through-bore" 这些工程术语。</p>
+        </div>
+
+        <div class="step">
+          <div class="step-header"><span class="step-num">1</span><span class="step-title">生成零件</span></div>
+          <div class="step-body">
+            <div class="code-wrap">
+              <pre><code>npx skills run cad \
+  --prompt "Create an 80 mm diameter, 10 mm thick circular flange with a 30 mm central through-bore. Add six 6 mm through-holes on a 60 mm bolt circle and fillet the outside circular edges." \
+  --output ./benchmark_02_flange.step</code></pre>
+              <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header"><span class="step-num">2</span><span class="step-title">测量验证</span></div>
+          <div class="step-body">
+            <p>用 FreeCAD 测量并记录：</p>
+            <div class="compare-table">
+              <table>
+                <tr><th>检查项</th><th>目标值</th><th>实际值</th><th>误差</th></tr>
+                <tr><td>外径</td><td>80 mm</td><td>___ mm</td><td>___ %</td></tr>
+                <tr><td>厚度</td><td>10 mm</td><td>___ mm</td><td>___ %</td></tr>
+                <tr><td>中心孔径</td><td>30 mm</td><td>___ mm</td><td>___ %</td></tr>
+                <tr><td>螺栓孔数</td><td>6 个</td><td>___ 个</td><td>-</td></tr>
+                <tr><td>螺栓孔径</td><td>6 mm</td><td>___ mm</td><td>___ %</td></tr>
+                <tr><td>Bolt Circle</td><td>60 mm</td><td>___ mm</td><td>___ %</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="box box-tip">
+          <div class="box-title">💡 观察重点</div>
+          <p>6 个孔是否真的"均布"？有没有孔数不对或角度偏差？这是 AI 几何推理的难点。</p>
+        </div>
+
+        <div class="checkpoint">
+          <div class="checkpoint-header">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            验收标准
+          </div>
+          <ul>
+            <li><code>benchmark_02_flange.step</code> 文件存在</li>
+            <li>6 个孔均布在圆周上</li>
+            <li>测量记录表已填写</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 零件 3 ==================== -->
+    <section class="section" id="part3">
+      <div class="part-card">
+        <div class="part-card-header">
+          <span class="part-badge">BENCHMARK 03</span>
+          <span class="part-name">L 型支架（带加强筋）</span>
+        </div>
+        <p style="color:#64748b;margin-bottom:12px;">L-Bracket With Gussets and Two Hole Directions</p>
+
+        <div class="box box-info">
+          <div class="box-title">📐 零件科普</div>
+          <p>L 支架是结构件中最常见的"角铁"升级版。这个零件的难点：</p>
+          <ul style="padding-left:20px;margin-top:8px;">
+            <li>两个方向的孔（底座垂直孔 + 背板水平孔）</li>
+            <li>三角形加强筋（gusset）——AI 要理解"加强"的意图</li>
+            <li>底座与背板的过渡圆角</li>
+          </ul>
+          <p style="margin-top:8px;"><strong>工程意义</strong>：这是第一个"多特征、多方向"的零件。如果 AI 能搞定这个，说明它理解了空间几何关系。</p>
+        </div>
+
+        <div class="step">
+          <div class="step-header"><span class="step-num">1</span><span class="step-title">生成零件</span></div>
+          <div class="step-body">
+            <div class="code-wrap">
+              <pre><code>npx skills run cad \
+  --prompt "Create an L-bracket from a base plate and rear vertical plate. Add vertical base holes, horizontal back-plate holes, two triangular gussets, and a filleted base/back transition." \
+  --output ./benchmark_03_lbracket.step</code></pre>
+              <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header"><span class="step-num">2</span><span class="step-title">观察与记录</span></div>
+          <div class="step-body">
+            <p>这个零件没有严格的尺寸约束，重点观察<strong>结构完整性</strong>：</p>
+            <div class="compare-table">
+              <table>
+                <tr><th>检查项</th><th>应该有</th><th>实际有？</th></tr>
+                <tr><td>底座板</td><td>✅</td><td>□</td></tr>
+                <tr><td>垂直背板</td><td>✅</td><td>□</td></tr>
+                <tr><td>底座孔（垂直方向）</td><td>✅</td><td>□</td></tr>
+                <tr><td>背板孔（水平方向）</td><td>✅</td><td>□</td></tr>
+                <tr><td>三角形加强筋（2 个）</td><td>✅</td><td>□</td></tr>
+                <tr><td>过渡圆角</td><td>✅</td><td>□</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="box box-warning">
+          <div class="box-title">😤 到这儿，你累了吗？</div>
+          <p>3 个零件下来，你可能已经发现了：</p>
+          <ul style="padding-left:20px;margin-top:8px;">
+            <li>每次都要手动写 Prompt</li>
+            <li>生成完要手动打开 FreeCAD 测量</li>
+            <li>发现偏差要手动写修正指令</li>
+            <li>再生成、再测量、再修正……</li>
+          </ul>
+          <p style="margin-top:8px;"><strong>这就是 Prompt Engineering 的瓶颈</strong>——你成了 AI 的"发球机"。如果是 50 个零件呢？500 个呢？</p>
+        </div>
+
+        <div class="checkpoint">
+          <div class="checkpoint-header">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            验收标准
+          </div>
+          <ul>
+            <li><code>benchmark_03_lbracket.step</code> 文件存在</li>
+            <li>结构检查表已填写</li>
+            <li>记录了至少一个发现的问题</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 零件 4：Loop 开始 ==================== -->
+    <section class="section" id="part4">
+      <div class="part-card" style="border-color:#8b5cf6;background:#faf5ff;">
+        <div class="part-card-header">
+          <span class="part-badge" style="background:#8b5cf6;">BENCHMARK 04 · LOOP</span>
+          <span class="part-name">阶梯轴（带键槽）—— Loop Engineering 版</span>
+        </div>
+        <p style="color:#64748b;margin-bottom:12px;">Stepped Shaft With Keyway</p>
+
+        <div class="box box-purple">
+          <div class="box-title">🔄 本零件用 Loop Engineering 生成</div>
+          <p>不再手动一发一收，而是写一个循环脚本，让 AI 自己生成→测量→修正→直到达标。</p>
+        </div>
+
+        <div class="box box-info">
+          <div class="box-title">📐 零件科普</div>
+          <p>阶梯轴是传动系统的核心零件，用于安装齿轮、轴承、联轴器。关键特征：</p>
+          <ul style="padding-left:20px;margin-top:8px;">
+            <li>三段不同直径（20/30/20mm）</li>
+            <li>中间段顶部的键槽（传递扭矩）</li>
+            <li>两端倒角（便于装配）</li>
+          </ul>
+          <p style="margin-top:8px;"><strong>工程意义</strong>：键槽的尺寸和位置必须精确，否则装不上齿轮。这是检验 AI 对"功能性特征"理解能力的零件。</p>
+        </div>
+
+        <div class="step">
+          <div class="step-header"><span class="step-num">1</span><span class="step-title">写 Loop 脚本</span></div>
+          <div class="step-body">
+            <p>创建一个 Python 脚本 <code>loop_shaft.py</code>：</p>
+            <div class="code-wrap">
+              <div class="code-header">loop_shaft.py</div>
+              <pre class="has-header"><code>import subprocess
+import os
+
+# ========== 验收标准 ==========
+target = {
+    "total_length": 120,      # mm
+    "diameters": [20, 30, 20], # 三段直径
+    "tolerance": 0.02         # 2% 误差上限
+}
+
+prompt = """Create a 120 mm shaft along X with 20/30/20 mm diameter
+stepped sections. Add end chamfers and a shallow rectangular keyway
+on top of the middle section."""
+
+output_file = "benchmark_04_shaft.step"
+max_iterations = 5
+
+# ========== Loop 开始 ==========
+for i in range(max_iterations):
+    print(f"\n--- 第 {i+1} 轮 ---")
+
+    # 1. 生成
+    result = subprocess.run([
+        "npx", "skills", "run", "cad",
+        "--prompt", prompt,
+        "--output", output_file
+    ], capture_output=True, text=True)
+
+    if result.returncode != 0:
+        print("生成失败:", result.stderr)
+        continue
+
+    print(f"✅ 已生成 {output_file}")
+
+    # 2. 测量（这里用 FreeCAD 脚本或手动测量）
+    # 实际项目中，这里应该调用 FreeCAD 的 Python API 自动测量
+    print("📏 请用 FreeCAD 测量以下尺寸并输入：")
+    actual_length = float(input("  总长度 (mm): "))
+    actual_d1 = float(input("  第一段直径 (mm): "))
+    actual_d2 = float(input("  第二段直径 (mm): "))
+    actual_d3 = float(input("  第三段直径 (mm): "))
+
+    # 3. 计算误差
+    errors = [
+        abs(actual_length - target["total_length"]) / target["total_length"],
+        abs(actual_d1 - target["diameters"][0]) / target["diameters"][0],
+        abs(actual_d2 - target["diameters"][1]) / target["diameters"][1],
+        abs(actual_d3 - target["diameters"][2]) / target["diameters"][2],
+    ]
+    max_error = max(errors)
+
+    print(f"  最大误差: {max_error*100:.1f}%")
+
+    # 4. 判断是否合格
+    if max_error <= target["tolerance"]:
+        print(f"🎉 合格！共迭代 {i+1} 轮")
+        break
+    else:
+        # 5. 自动修正 Prompt
+        prompt += f"\n修正：当前最大误差 {max_error*100:.1f}%，请精确调整尺寸。"
+        print(f"🔄 误差超标，自动修正 Prompt，进入下一轮...")
+else:
+    print(f"⚠️ 达到最大迭代次数 {max_iterations}，请检查 Prompt 或手动调整。")
+
+print(f"\n📄 最终文件: {output_file}")
+print(f"📊 迭代报告: 共 {i+1} 轮，最终误差 {max_error*100:.1f}%")</code></pre>
+              <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            </div>
+            <div class="box box-tip">
+              <div class="box-title">💡 说明</div>
+              <p>这个脚本演示了 Loop 的核心逻辑。实际工程中，测量步骤可以用 FreeCAD 的 Python API（<code>import Part</code>）自动完成，不需要手动输入。</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header"><span class="step-num">2</span><span class="step-title">运行 Loop</span></div>
+          <div class="step-body">
+            <div class="code-wrap">
+              <pre><code>python loop_shaft.py</code></pre>
+              <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            </div>
+            <p>按提示输入 FreeCAD 测量结果，观察 AI 如何自动修正。</p>
+          </div>
+        </div>
+
+        <div class="checkpoint">
+          <div class="checkpoint-header">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            验收标准
+          </div>
+          <ul>
+            <li><code>benchmark_04_shaft.step</code> 文件存在</li>
+            <li><code>loop_shaft.py</code> 脚本可运行</li>
+            <li>记录迭代轮数和最终误差</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 零件 5：Loop 进阶 ==================== -->
+    <section class="section" id="part5">
+      <div class="part-card" style="border-color:#8b5cf6;background:#faf5ff;">
+        <div class="part-card-header">
+          <span class="part-badge" style="background:#8b5cf6;">BENCHMARK 05 · LOOP</span>
+          <span class="part-name">电子外壳（带支撑柱）—— Loop Engineering 进阶</span>
+        </div>
+        <p style="color:#64748b;margin-bottom:12px;">Open-Top Electronics Enclosure With Bosses</p>
+
+        <div class="box box-purple">
+          <div class="box-title">🔄 本零件用 Loop Engineering 生成，加入结构检查</div>
+          <p>除了尺寸，还要检查"结构完整性"——壁厚、支撑柱、盲孔是否都存在。</p>
+        </div>
+
+        <div class="box box-info">
+          <div class="box-title">📐 零件科普</div>
+          <p>电子外壳是 3D 打印最常见的应用场景。关键特征：</p>
+          <ul style="padding-left:20px;margin-top:8px;">
+            <li>空心结构（壁厚 3mm，省材料）</li>
+            <li>内部支撑柱（standoff，用于固定电路板）</li>
+            <li>支撑柱上的盲孔（不通到底，用于拧螺丝）</li>
+            <li>外角圆角（2mm，避免打印时应力开裂）</li>
+          </ul>
+          <p style="margin-top:8px;"><strong>工程意义</strong>：这是第一个"薄壁+内部特征"的零件，考验 AI 对制造约束（壁厚、打印方向）的理解。</p>
+        </div>
+
+        <div class="step">
+          <div class="step-header"><span class="step-num">1</span><span class="step-title">写进阶 Loop 脚本</span></div>
+          <div class="step-body">
+            <p>创建 <code>loop_enclosure.py</code>，加入<strong>结构检查</strong>：</p>
+            <div class="code-wrap">
+              <div class="code-header">loop_enclosure.py</div>
+              <pre class="has-header"><code>import subprocess
+
+# ========== 验收标准（尺寸 + 结构） ==========
+target = {
+    "wall_thickness": 3,      # mm
+    "corner_fillet": 2,       # mm
+    "standoff_count": 4,      # 支撑柱数量
+    "tolerance": 0.02
+}
+
+prompt = """Create a hollow open-top enclosure with 3 mm walls and floor.
+Add four internal standoffs with centered blind holes and 2 mm outside
+vertical corner fillets."""
+
+output_file = "benchmark_05_enclosure.step"
+max_iterations = 5
+
+for i in range(max_iterations):
+    print(f"\n--- 第 {i+1} 轮 ---")
+
+    # 1. 生成
+    subprocess.run([
+        "npx", "skills", "run", "cad",
+        "--prompt", prompt,
+        "--output", output_file
+    ])
+
+    print("📏 请用 FreeCAD 检查并输入：")
+
+    # 2. 尺寸检查
+    wall = float(input("  壁厚 (mm): "))
+    fillet = float(input("  外角圆角 (mm): "))
+
+    # 3. 结构检查（计数）
+    standoffs = int(input("  支撑柱数量: "))
+    has_blind_holes = input("  支撑柱是否有盲孔? (y/n): ").lower() == 'y'
+    is_hollow = input("  是否为空心开口? (y/n): ").lower() == 'y'
+
+    # 4. 评估
+    errors = []
+    if abs(wall - target["wall_thickness"]) / target["wall_thickness"] > target["tolerance"]:
+        errors.append(f"壁厚偏差: {wall}mm")
+    if abs(fillet - target["corner_fillet"]) / target["corner_fillet"] > target["tolerance"]:
+        errors.append(f"圆角偏差: {fillet}mm")
+    if standoffs != target["standoff_count"]:
+        errors.append(f"支撑柱数量不对: {standoffs}个")
+    if not has_blind_holes:
+        errors.append("缺少盲孔")
+    if not is_hollow:
+        errors.append("不是空心结构")
+
+    if not errors:
+        print(f"🎉 结构完整 + 尺寸合格！共 {i+1} 轮")
+        break
+    else:
+        print("🔄 发现问题:")
+        for e in errors:
+            print(f"   - {e}")
+        prompt += "\n修正：" + "；".join(errors) + "，请修正。"
+        print("自动更新 Prompt，进入下一轮...")
+else:
+    print(f"⚠️ 达到最大迭代次数")
+
+print(f"\n📄 最终文件: {output_file}")
+print(f"📊 迭代轮数: {i+1}")</code></pre>
+              <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header"><span class="step-num">2</span><span class="step-title">运行并对比体验</span></div>
+          <div class="step-body">
+            <div class="code-wrap">
+              <pre><code>python loop_enclosure.py</code></pre>
+              <button class="copy-btn" onclick="copyCode(this)">复制</button>
+            </div>
+            <p>对比零件 1-3 的手动流程和零件 4-5 的 Loop 流程，体会<strong>Loop Engineering</strong>的价值：</p>
+            <ul style="padding-left:20px;margin-top:8px;">
+              <li>你只需设定标准，不需要每轮都写 Prompt</li>
+              <li>AI 自己发现问题、自己修正</li>
+              <li>批量生成时，脚本可以无人值守运行</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="checkpoint">
+          <div class="checkpoint-header">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            验收标准
+          </div>
+          <ul>
+            <li><code>benchmark_05_enclosure.step</code> 文件存在</li>
+            <li><code>loop_enclosure.py</code> 脚本可运行</li>
+            <li>结构检查全部通过（空心、4 柱、盲孔、圆角）</li>
+            <li>记录迭代轮数和发现的问题清单</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 交付物清单 ==================== -->
+    <section class="section" id="deliverables">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <h2 class="section-title">交付物清单</h2>
+      </div>
+
+      <div class="compare-table">
+        <table>
+          <thead>
+            <tr>
+              <th>文件</th>
+              <th>说明</th>
+              <th style="text-align:center;width:80px;">完成</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>benchmark_01_block.step</code></td>
+              <td>矩形校准块 + 测量记录表</td>
+              <td style="text-align:center;"><input type="checkbox" style="width:18px;height:18px;accent-color:#2563eb;"></td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td><code>benchmark_02_flange.step</code></td>
+              <td>圆形法兰盘 + 测量记录表</td>
+              <td style="text-align:center;"><input type="checkbox" style="width:18px;height:18px;accent-color:#2563eb;"></td>
+            </tr>
+            <tr>
+              <td><code>benchmark_03_lbracket.step</code></td>
+              <td>L 型支架 + 结构检查表</td>
+              <td style="text-align:center;"><input type="checkbox" style="width:18px;height:18px;accent-color:#2563eb;"></td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td><code>benchmark_04_shaft.step</code> + <code>loop_shaft.py</code></td>
+              <td>阶梯轴 + Loop 脚本 + 迭代报告</td>
+              <td style="text-align:center;"><input type="checkbox" style="width:18px;height:18px;accent-color:#2563eb;"></td>
+            </tr>
+            <tr>
+              <td><code>benchmark_05_enclosure.step</code> + <code>loop_enclosure.py</code></td>
+              <td>电子外壳 + 进阶 Loop 脚本 + 迭代报告</td>
+              <td style="text-align:center;"><input type="checkbox" style="width:18px;height:18px;accent-color:#2563eb;"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box box-success" style="margin-top:24px;">
+        <div class="box-title">🎓 课程总结</div>
+        <p>通过这 5 个 Benchmark 零件，你完成了从 <strong>Prompt Engineering</strong> 到 <strong>Loop Engineering</strong> 的进化：</p>
+        <ul style="padding-left:20px;margin-top:8px;">
+          <li>理解了 3D 建模的两种文件格式（STEP vs STL）</li>
+          <li>体验了 Text-to-CAD 的能力边界</li>
+          <li>发现了"手动修正循环"的痛点</li>
+          <li>学会了用 Loop Engineering 让 AI 自主迭代</li>
+          <li>掌握了六原语：指令、工具、上下文、记忆、终止、评估</li>
+        </ul>
+        <p style="margin-top:8px;"><strong>下一步</strong>：把 Loop 脚本中的手动输入替换为 FreeCAD Python API 自动测量，实现真正的无人值守 CAD 生成。</p>
+      </div>
+    </section>
+
+    <div class="footer">
+      <p>Text-to-CAD 实战课 &middot; 从 Prompt 到 Loop Engineering &middot; XJTLU AOA TECH</p>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function copyCode(btn) {
+  var pre = btn.parentElement.querySelector('pre');
+  var text = pre.innerText;
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = '已复制';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = '复制';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+function scrollToSec(id, el) {
+  var sec = document.getElementById(id);
+  if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+  document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+  if (el) el.classList.add('active');
+}
+function toggleMenu() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+window.addEventListener('scroll', function() {
+  var sections = document.querySelectorAll('.section');
+  var navItems = document.querySelectorAll('.nav-item');
+  var current = '';
+  sections.forEach(function(sec) {
+    if (pageYOffset >= sec.offsetTop - 100) current = sec.id;
+  });
+  navItems.forEach(function(item) {
+    item.classList.remove('active');
+    if (item.getAttribute('onclick') && item.getAttribute('onclick').includes("'" + current + "'")) {
+      item.classList.add('active');
+    }
+  });
+});
+</script>
+
+</body>
+</html>

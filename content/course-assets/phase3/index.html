@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Phase 3 Environmental Perception: Plug-and-Play Machine Senses</title>
+  <style>
+    :root { --bg:#f6f8fb; --card:#fff; --ink:#172033; --muted:#667085; --brand:#1f6feb; --brand2:#00a884; --line:#d8dee9; --soft:#eef6ff; --warn:#fff7e6; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif; color:var(--ink); background:linear-gradient(180deg,#eaf3ff 0%,var(--bg) 360px); line-height:1.55; }
+    header, main { max-width:1100px; margin:0 auto; }
+    header { padding:56px 24px 28px; }
+    main { padding:0 24px 56px; }
+    .badge { display:inline-block; padding:6px 12px; border-radius:999px; background:rgba(31,111,235,.12); color:var(--brand); font-weight:700; font-size:14px; letter-spacing:.02em; }
+    h1 { margin:18px 0 12px; font-size:clamp(34px,5vw,64px); line-height:1.02; letter-spacing:-.04em; }
+    .subtitle { max-width:840px; color:var(--muted); font-size:20px; margin:0; }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; margin-top:24px; }
+    .grid.three { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:24px; box-shadow:0 12px 30px rgba(23,32,51,.07); }
+    .card h2, .card h3 { margin-top:0; }
+    .day { border-top:5px solid var(--brand); }
+    .day:nth-child(2) { border-top-color:var(--brand2); }
+    .day:nth-child(3) { border-top-color:#f97316; }
+    .day:nth-child(4) { border-top-color:#7c3aed; }
+    .day:nth-child(5) { border-top-color:#db2777; }
+    .day:nth-child(6) { border-top-color:#0f766e; }
+    .meta { color:var(--muted); font-size:14px; margin-bottom:12px; text-transform:uppercase; letter-spacing:.08em; font-weight:700; }
+    ul { padding-left:22px; } li { margin:7px 0; }
+    .outcome { background:var(--soft); border-radius:14px; padding:14px 16px; margin-top:16px; font-weight:700; }
+    .flow { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:18px; }
+    .step { background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px; text-align:center; font-weight:700; }
+    .step span { display:block; color:var(--brand); font-size:26px; margin-bottom:6px; }
+    table { width:100%; border-collapse:collapse; overflow:hidden; border-radius:14px; margin-top:12px; }
+    th,td { text-align:left; border-bottom:1px solid var(--line); padding:12px 14px; vertical-align:top; }
+    th { background:#f0f4f9; font-size:14px; }
+    code { background:#f2f4f7; border:1px solid #e4e7ec; border-radius:6px; padding:2px 6px; font-family:Consolas,"Courier New",monospace; font-size:.92em; }
+    .notice { background:var(--warn); border:1px solid #ffd591; border-radius:18px; padding:18px 20px; margin-top:18px; }
+    .links a { display:inline-block; margin:6px 8px 6px 0; padding:9px 12px; border-radius:10px; background:#eef6ff; color:#164a9f; text-decoration:none; font-weight:700; }
+    footer { color:var(--muted); text-align:center; padding:24px; border-top:1px solid var(--line); }
+    @media (max-width:900px) { .grid.three,.flow { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width:760px) { .grid,.grid.three,.flow { grid-template-columns:1fr; } header { padding-top:36px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="badge">Phase 3 · Environmental Perception · Plug-and-Play Machine Senses</div>
+    <h1>Environmental perception: plug-and-play machine senses</h1>
+    <h2 style="margin:0 0 12px;font-size:28px;letter-spacing:-0.02em;">环境感知：机器感官即插即用</h2>
+    <p class="subtitle">Students connect sensors, screens, cameras, microphones, LED strips, and Edge AI tools so hardware can sense and understand the environment.</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Lecture introduction</h2>
+      <h3>中文课程简介</h3>
+      <p>本课程主题是“环境感知：机器感官即插即用”。学生把不同硬件模块理解为机器的感官：温湿度传感器感知环境状态，超声波感知距离，摄像头形成视觉，麦克风形成听觉，OLED 和灯带让感知结果可见。</p>
+      <p>Students move from basic hardware input/output into plug-and-play machine senses. Each day adds a new sensing channel, then uses rules, displays, sensor fusion, or Edge AI to turn raw signals into environmental understanding.</p>
+      <div class="flow" aria-label="learning flow">
+        <div class="step"><span>1</span>First I/O sense</div>
+        <div class="step"><span>2</span>Env sensors</div>
+        <div class="step"><span>3</span>Fusion sense</div>
+        <div class="step"><span>4</span>Distance sense</div>
+        <div class="step"><span>5</span>Vision sense</div>
+        <div class="step"><span>6</span>Audio sense</div>
+        <div class="step"><span>7</span>Visible output</div>
+        <div class="step"><span>8</span>Perception demo</div>
+      </div>
+    </section>
+
+    <section class="grid three">
+      <article class="card day"><div class="meta">Day 1</div><h2>Basic electronics hardware intro</h2><p>Arduino setup, LED, button, breathing LED, and AI-assisted code modification.</p><h3>Topics</h3><ul><li>Arduino IDE and board libraries</li><li>LED control</li><li>Button input</li><li>Breathing LED with PWM</li><li>AI modifies example code</li></ul><div class="outcome">Outcome: button-controlled lighting or lighting effect variations.</div></article>
+      <article class="card day"><div class="meta">Day 2</div><h2>Sensor communication and screen design</h2><p>Temperature/humidity, buttons, screens, I2C, OLED, and AI-assisted interface design.</p><h3>Topics</h3><ul><li>DHT11 data</li><li>I2C scanner</li><li>OLED display</li><li>Button/page interaction</li><li>AI screen layout prompts</li></ul><div class="outcome">Outcome: multi-interface badge or thermometer/hygrometer.</div></article>
+      <article class="card day"><div class="meta">Day 3</div><h2>Edge AI sensor fusion</h2><p>AI fundamentals, Edge AI concepts, sensor data fusion, and environmental monitoring.</p><h3>Topics</h3><ul><li>Rule decision vs AI decision</li><li>Multi-sensor reading</li><li>Data normalization</li><li>Weighted fusion</li><li>Edge Impulse classifier workflow</li></ul><div class="outcome">Outcome: environmental monitoring device.</div></article>
+      <article class="card day"><div class="meta">Day 4</div><h2>Ultrasonic intelligent decisions</h2><p>Ultrasonic sensing, threshold rules, OLED decision display, and intelligent device output.</p><h3>Topics</h3><ul><li>Ultrasonic ranging</li><li>Near/safe/far states</li><li>Decision rules</li><li>OLED feedback</li><li>AI-assisted rule design</li></ul><div class="outcome">Outcome: intelligent decision device.</div></article>
+      <article class="card day"><div class="meta">Day 5</div><h2>Camera vision and Edge Impulse</h2><p>Camera capture, network viewing, CNN basics, Edge Impulse image classification, and gesture recognition.</p><h3>Topics</h3><ul><li>Camera frames</li><li>Image data and pixels</li><li>CNN basics</li><li>Edge Impulse image training</li><li>Local image recognition</li></ul><div class="outcome">Outcome: gesture recognition system.</div></article>
+      <article class="card day"><div class="meta">Day 6</div><h2>LED strip and audio Edge AI</h2><p>LED strip programming, microphone capture, audio validation, Edge Impulse audio recognition, and voice-controlled lights.</p><h3>Topics</h3><ul><li>LED strip effects</li><li>Microphone values</li><li>Sound validation</li><li>Audio classification</li><li>Voice-controlled lights</li></ul><div class="outcome">Outcome: voice-controlled lights.</div></article>
+    </section>
+
+    <section class="card">
+      <h2>Lab map</h2>
+      <table><thead><tr><th>Day</th><th>Folder</th><th>Lab</th><th>Purpose</th></tr></thead><tbody>
+        <tr><td>Day 1</td><td><code>day1-basic-embedded/labs/01-led-on</code></td><td>LED ON</td><td>Use digital output to turn on an LED.</td></tr>
+        <tr><td>Day 1</td><td><code>day1-basic-embedded/labs/02-led-blink</code></td><td>LED Blink</td><td>Use loop and delay to blink an LED.</td></tr>
+        <tr><td>Day 1</td><td><code>day1-basic-embedded/labs/03-button-led</code></td><td>Button LED</td><td>Read a button and control an LED.</td></tr>
+        <tr><td>Day 1</td><td><code>day1-basic-embedded/labs/04-breathing-led</code></td><td>Breathing LED</td><td>Use PWM and AI-assisted code changes for lighting effects.</td></tr>
+        <tr><td>Day 2</td><td><code>day2-sensors-oled-i2c/labs/01-i2c-scanner</code></td><td>I2C Scanner</td><td>Find connected I2C devices.</td></tr>
+        <tr><td>Day 2</td><td><code>day2-sensors-oled-i2c/labs/04-dht11-oled</code></td><td>DHT11 + OLED</td><td>Build a smart thermometer/hygrometer display.</td></tr>
+        <tr><td>Day 2</td><td><code>day2-sensors-oled-i2c/labs/05-multi-interface-badge</code></td><td>Interface Badge</td><td>Create a multi-interface badge or thermometer/hygrometer.</td></tr>
+        <tr><td>Day 3</td><td><code>day3-edge-ai-sensor-fusion/labs/01-multi-sensor-read</code></td><td>Multi-Sensor Read</td><td>Read several sensors in one program.</td></tr>
+        <tr><td>Day 3</td><td><code>day3-edge-ai-sensor-fusion/labs/05-edge-impulse-fusion-classifier</code></td><td>Edge Impulse Fusion</td><td>Train a local classifier from sensor-fusion features.</td></tr>
+        <tr><td>Day 4</td><td><code>day4-ultrasonic-ai-decision/labs/01-ultrasonic-ranging</code></td><td>Ultrasonic Ranging</td><td>Measure distance using TRIG and ECHO pins.</td></tr>
+        <tr><td>Day 4</td><td><code>day4-ultrasonic-ai-decision/labs/03-distance-oled-display</code></td><td>Decision Display</td><td>Display distance and decision state on OLED.</td></tr>
+        <tr><td>Day 5</td><td><code>day5-camera-edge-ai-vision/labs/01-camera-first-capture</code></td><td>Camera Capture</td><td>Initialize camera and capture the first frame.</td></tr>
+        <tr><td>Day 5</td><td><code>day5-camera-edge-ai-vision/labs/05-edge-impulse-vision-classifier</code></td><td>Edge Impulse Vision</td><td>Use image classification workflow for gesture recognition.</td></tr>
+        <tr><td>Day 6</td><td><code>day6-audio-edge-ai-led-strip/labs/01-led-strip-basic</code></td><td>LED Strip</td><td>Program LED strip colors and effects.</td></tr>
+        <tr><td>Day 6</td><td><code>day6-audio-edge-ai-led-strip/labs/05-edge-impulse-audio-classifier</code></td><td>Edge Impulse Audio</td><td>Use audio classification workflow for voice-controlled lights.</td></tr>
+      </tbody></table>
+    </section>
+
+    <section class="grid">
+      <article class="card"><h2>Hardware checklist</h2><ul><li>ESP32-S3 or Arduino-compatible development board</li><li>LED, button, breadboard, jumper wires</li><li>DHT11 temperature/humidity sensor</li><li>0.96 inch I2C OLED display</li><li>Ultrasonic ranging sensor</li><li>Seeed XIAO ESP32-S3 Sense or camera/microphone board</li><li>Addressable LED strip such as WS2812/NeoPixel</li></ul></article>
+      <article class="card"><h2>Software checklist</h2><ul><li>Arduino IDE installed</li><li>ESP32 board package installed</li><li>Serial Monitor works at 115200 baud</li><li>Libraries: DHT, Adafruit SSD1306, Adafruit GFX</li><li>Camera examples for your ESP32-S3 board</li><li>Edge Impulse account and exported Arduino libraries for advanced labs</li></ul></article>
+    </section>
+
+    <section class="card">
+      <h2>How to use this folder</h2><h3>如何使用本文件夹</h3>
+      <ol><li>Open this <code>index.html</code> first to understand the lecture structure.</li><li>Read <code>README.md</code> for the overall learning path.</li><li>Go to each day folder and follow the lab README files.</li><li>Open each <code>.ino</code> file in Arduino IDE.</li><li>Upload, observe, debug, and explain how hardware input becomes intelligent output.</li><li>Submit final code, lab report, and evidence files in the <code>outputs/</code> folder.</li></ol>
+      <div class="links"><a href="README.md">Open main README</a><a href="day1-basic-embedded/README.md">Open Day 1</a><a href="day2-sensors-oled-i2c/README.md">Open Day 2</a><a href="day3-edge-ai-sensor-fusion/README.md">Open Day 3</a><a href="day4-ultrasonic-ai-decision/README.md">Open Day 4</a><a href="day5-camera-edge-ai-vision/README.md">Open Day 5</a><a href="day6-audio-edge-ai-led-strip/README.md">Open Day 6</a><a href="outputs/README.md">Open outputs guide</a><a href="resources/hardware-list.md">Open hardware list</a><a href="resources/pin-map-template.md">Open pin map template</a><a href="resources/troubleshooting.md">Open troubleshooting guide</a><a href="resources/difficulty-levels.md">Open difficulty levels</a></div>
+      <div class="notice"><strong>Teaching note / 教学提示:</strong> Frame every module as a plug-and-play machine sense: connect it, read its signal, interpret the environment, then show or act on the result. Edge Impulse remains an advanced extension.</div>
+    </section>
+  </main>
+  <footer>Smart Hardware Learning · Phase 3 · Hardware Intro, Environmental Perception, and Edge AI</footer>
+</body>
+</html>

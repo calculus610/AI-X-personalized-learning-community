@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+node_modules
+.next
+coverage
+logs
+*.log
+*.tsbuildinfo
+runtime
+qa-screens
+.chrome-qa
+data/*.json
+*.zip
+*.tgz
+.git
+.vercel

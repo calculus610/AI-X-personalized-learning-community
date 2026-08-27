@@ -1,0 +1,145 @@
+name: aix-personalized-learning-community
+
+services:
+  mysql:
+    image: mysql:8.4@sha256:b3b90af2a6552ae30c266fdb7d5dd55f3afb72404bb78d37fe8a23eb857fd3fb
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./apps/backend/auth-schema.sql:/docker-entrypoint-initdb.d/01-auth.sql:ro
+      - ./apps/backend/learning-schema.sql:/docker-entrypoint-initdb.d/02-learning.sql:ro
+      - ./apps/backend/agent-schema.sql:/docker-entrypoint-initdb.d/03-agent.sql:ro
+      - ./apps/backend/quiz-schema.sql:/docker-entrypoint-initdb.d/04-quiz.sql:ro
+      - ./apps/backend/evidence-chain-schema.sql:/docker-entrypoint-initdb.d/05-evidence.sql:ro
+      - ./apps/backend/memory-schema.sql:/docker-entrypoint-initdb.d/06-memory.sql:ro
+      - ./apps/backend/migrations/20260809_agent_session_locale.sql:/docker-entrypoint-initdb.d/07-agent-locale.sql:ro
+      - ./infrastructure/seed-agent-config.sql:/docker-entrypoint-initdb.d/08-agent-config.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_ROOT_PASSWORD mysqladmin ping -h 127.0.0.1 -uroot --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  minio:
+    image: minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio-data:/data
+
+  api:
+    image: aix-community-api:local
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      content-init:
+        condition: service_completed_successfully
+    environment: &api-environment
+      NODE_ENV: production
+      PORT: 3300
+      HOST: 0.0.0.0
+      DATABASE_HOST: mysql
+      DATABASE_PORT: 3306
+      DATABASE_NAME: ${MYSQL_DATABASE}
+      DATABASE_USER: ${MYSQL_USER}
+      DATABASE_PASSWORD: ${MYSQL_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      ACCESS_TOKEN_TTL: 7d
+      COOKIE_SECURE: "false"
+      COOKIE_PATH: /personalized-secure-api
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_USE_SSL: "false"
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET: personalized-secure-assets
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      AGENT_PROVIDER_URL: ${AGENT_PROVIDER_URL:-}
+      AGENT_PROVIDER_API_KEY: ${AGENT_PROVIDER_API_KEY:-}
+      AGENT_APP_KEY: ${AGENT_APP_KEY:-}
+      HIAGENT_PHASE1_APP_KEY: ${HIAGENT_PHASE1_APP_KEY:-}
+      HIAGENT_PHASE2_APP_KEY: ${HIAGENT_PHASE2_APP_KEY:-}
+      HIAGENT_PHASE34_APP_KEY: ${HIAGENT_PHASE34_APP_KEY:-}
+      HIAGENT_PHASE5_APP_KEY: ${HIAGENT_PHASE5_APP_KEY:-}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3300/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+
+  content-init:
+    image: aix-community-api:local
+    depends_on:
+      mysql:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    environment: *api-environment
+    command: ["node", "initialize-local-content.mjs"]
+    volumes:
+      - ./apps/frontend/lib/original-course-executor-data.json:/import/original-course-executor-data.json:ro
+      - ./content/course-assets:/import/original-course-assets:ro
+    restart: "no"
+
+  frontend:
+    image: aix-community-frontend:local
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_APP_BASE_PATH: /personalized-secure
+        NEXT_PUBLIC_PERSONALIZED_AUTH_BASE: /personalized-secure-api
+        NEXT_PUBLIC_PERSONALIZED_V2_API_BASE: /personalized-secure-api/v1
+        NEXT_PUBLIC_PERSONALIZED_SERVICE_BASE: /personalized-secure-api/v1
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: 3402
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3402/personalized-secure/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  nginx:
+    image: nginx:1.28-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236
+    restart: unless-stopped
+    depends_on:
+      frontend:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    ports:
+      - "${PERSONALIZED_SECURE_PORT:-8080}:8080"
+    volumes:
+      - ./infrastructure/nginx.conf:/etc/nginx/nginx.conf:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/personalized-secure/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mysql-data:
+  minio-data:

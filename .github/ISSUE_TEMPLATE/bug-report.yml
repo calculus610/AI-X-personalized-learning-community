@@ -1,0 +1,61 @@
+name: Bug report / 问题报告
+description: Report a reproducible problem without including secrets or personal data. / 报告可复现问题，不要包含凭据或个人数据。
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping improve AI-X. Security vulnerabilities, exposed credentials, and real user data must be reported privately according to SECURITY.md.
+
+        感谢你帮助改进 AI-X。安全漏洞、暴露凭据和真实用户数据必须按 SECURITY.md 私密报告。
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting / 提交前
+      options:
+        - label: I searched existing issues and pull requests. / 我已搜索现有 Issue 和 Pull Request。
+          required: true
+        - label: This report contains no secret, credential, or real user data. / 本报告不包含密钥、凭据或真实用户数据。
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened? / 发生了什么？
+      description: Describe the observable problem and its impact. / 说明可观察问题和影响。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps / 复现步骤
+      placeholder: |
+        1. Start with ...
+        2. Open ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior / 预期行为
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment / 环境
+      description: OS, architecture, Docker version, browser, branch, and commit. / 操作系统、架构、Docker 版本、浏览器、分支和 commit。
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Safe logs or screenshots / 已脱敏日志或截图
+      description: Remove tokens, passwords, usernames, uploaded work, and personal data first. / 先删除 Token、密码、用户名、上传作品和个人数据。
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context / 其他信息

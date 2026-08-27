@@ -1,0 +1,32 @@
+# v0 sandbox internal files
+__v0_runtime_loader.js
+__v0_devtools.tsx
+__v0_jsx-dev-runtime.ts
+.snowflake/
+.v0-trash/
+.vercel/
+
+# Environment variables
+.env*.local
+
+# Common ignores
+node_modules
+.pnpm-store/
+.next/
+.DS_Store
+data/*.json
+data/evidence/
+deploy/*.tgz
+.deploy-private/
+qa-screens/
+qa-chrome-*/
+*.log
+*.tsbuildinfo
+.v0*.png
+design-review/*.png
+deploy/.*/
+deploy/*-202*/
+deploy/chunks-*/
+deploy/prebuilt-*/
+deploy/frontend-*/
+deploy/api-step-*/

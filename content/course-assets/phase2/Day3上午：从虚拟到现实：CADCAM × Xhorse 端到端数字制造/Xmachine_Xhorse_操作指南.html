@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xmachine Xhorse 桌面五轴CNC 操作指南</title>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --secondary: #34a853;
+            --warning: #fbbc04;
+            --danger: #ea4335;
+            --dark: #202124;
+            --light: #f8f9fa;
+            --gray: #5f6368;
+            --border: #dadce0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.7;
+            color: var(--dark);
+            background: #fff;
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 40px 24px; }
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--gray);
+            margin-bottom: 32px;
+        }
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 40px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--primary);
+            color: var(--dark);
+        }
+        h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            color: var(--primary);
+        }
+        p { margin-bottom: 12px; }
+        ul, ol { margin-left: 20px; margin-bottom: 16px; }
+        li { margin-bottom: 8px; }
+        .hero {
+            background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+            color: white;
+            padding: 48px 32px;
+            border-radius: 16px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        .hero h1 { color: white; }
+        .hero .subtitle { color: rgba(255,255,255,0.9); margin-bottom: 0; }
+        .spec-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .spec-card {
+            background: var(--light);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .spec-card:hover { transform: translateY(-4px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .spec-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: block;
+            margin-bottom: 4px;
+        }
+        .spec-label { font-size: 0.9rem; color: var(--gray); }
+        .step {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            align-items: flex-start;
+        }
+        .step-num {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+            font-size: 1rem;
+        }
+        .step-content { flex: 1; }
+        .step-content h4 { font-size: 1.1rem; margin-bottom: 6px; color: var(--dark); }
+        .alert {
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin: 20px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .alert-danger { background: #fce8e6; border-left: 4px solid var(--danger); }
+        .alert-warning { background: #fef3e8; border-left: 4px solid var(--warning); }
+        .alert-info { background: #e8f0fe; border-left: 4px solid var(--primary); }
+        .alert-icon { font-size: 1.3rem; flex-shrink: 0; }
+        .panel-img {
+            width: 100%;
+            max-width: 600px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin: 16px auto;
+            display: block;
+        }
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        @media (max-width: 640px) {
+            .two-col { grid-template-columns: 1fr; }
+            .spec-grid { grid-template-columns: 1fr 1fr; }
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.95rem;
+        }
+        th, td {
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            text-align: left;
+        }
+        th { background: var(--light); font-weight: 600; }
+        tr:nth-child(even) { background: #fafafa; }
+        .tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 6px;
+            margin-bottom: 6px;
+        }
+        .tag-blue { background: #e8f0fe; color: var(--primary); }
+        .tag-green { background: #e6f4ea; color: var(--secondary); }
+        .tag-orange { background: #fef3e8; color: #b06000; }
+        .footer {
+            margin-top: 60px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        .flow-box {
+            background: var(--light);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+            border: 1px solid var(--border);
+        }
+        .flow-title {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.05rem;
+        }
+        .material-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .material-item {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+<div class="hero">
+    <h1>Xmachine Xhorse 桌面五轴CNC</h1>
+    <p class="subtitle">XM-100 / WM-100 操作指南 · 从开箱到首件加工</p>
+</div>
+
+<h2>一、设备概览</h2>
+<p>Xmachine 是由 Xhorse3D 推出的桌面级真五轴联动 CNC 加工中心，采用 XYZ 正交丝杆模组 + AC 双转台结构，支持 RTCP 刀具中心点控制。适用于创客空间、教育实验室、小型企业研发及精密零件打样。</p>
+
+<div class="spec-grid">
+    <div class="spec-card">
+        <span class="spec-value">156/203/125</span>
+        <span class="spec-label">X/Y/Z 行程 (mm)</span>
+    </div>
+    <div class="spec-card">
+        <span class="spec-value">-30°~110°</span>
+        <span class="spec-label">A轴行程</span>
+    </div>
+    <div class="spec-card">
+        <span class="spec-value">360°</span>
+        <span class="spec-label">C轴行程</span>
+    </div>
+    <div class="spec-card">
+        <span class="spec-value">100³</span>
+        <span class="spec-label">最大工件尺寸 (mm)</span>
+    </div>
+    <div class="spec-card">
+        <span class="spec-value">18,000</span>
+        <span class="spec-label">主轴转速 (rpm)</span>
+    </div>
+    <div class="spec-card">
+        <span class="spec-value">±0.01</span>
+        <span class="spec-label">定位重复精度 (mm)</span>
+    </div>
+    <div class="spec-card">
+        <span class="spec-value">6</span>
+        <span class="spec-label">自动换刀工位</span>
+    </div>
+    <div class="spec-card">
+        <span class="spec-value">2.2kW</span>
+        <span class="spec-label">整机额定功率</span>
+    </div>
+</div>
+
+<h2>二、开箱与安装</h2>
+
+<div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+        <h4>检查包装与配件</h4>
+        <p>确认主机、电源线、USB/网线、无线测头（选配）、标定块、刀具套装、夹具及说明书齐全。检查运输过程中是否有明显撞击痕迹。</p>
+    </div>
+</div>
+
+<div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+        <h4>放置与水平调节</h4>
+        <p>将机器放置于稳固、水平的桌面或工作台，确保四周留有至少 20cm 散热与操作空间。使用水平仪调节机脚，使工作台处于水平状态。</p>
+    </div>
+</div>
+
+<div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">
+        <h4>连接电源</h4>
+        <p>接入 220V 单相电源（部分型号需确认电压）。<strong>无需外接空压机</strong>即可运行基础加工；若需喷雾冷却或气吹清屑，可后期增配小型静音空压机。</p>
+    </div>
+</div>
+
+<div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content">
+        <h4>安装软件</h4>
+        <p>在控制电脑或机器自带系统中安装 <strong>XMaker</strong>（智能CAM平台）及五轴仿真软件。XMaker 支持 AI 自动生成刀路、文本/图像转3D、STL/STEP 导入等功能。</p>
+    </div>
+</div>
+
+<div class="alert alert-danger">
+    <div class="alert-icon">⚠️</div>
+    <div>
+        <strong>安全警告：</strong>首次通电前，请确认急停按钮处于释放状态；检查各轴行程范围内无异物；主轴内无残留包装保护物。
+    </div>
+</div>
+
+<h2>三、控制面板与操作界面</h2>
+<p>XM-100 配备 10.1 英寸触摸屏，界面直观。控制面板主要区域如下：</p>
+
+<img src="https://maker3d.com.cn/images/xmachine/panel.png" alt="控制面板示意图" class="panel-img">
+
+<table>
+    <tr><th>区域/按钮</th><th>功能说明</th></tr>
+    <tr><td>主菜单</td><td>选择加工模式（自动/手动/回零/手轮等）</td></tr>
+    <tr><td>急停按钮</td><td>紧急情况下立即切断伺服与主轴电源</td></tr>
+    <tr><td>主轴倍率 / 进给倍率</td><td>实时调节主轴转速与进给速度的百分比</td></tr>
+    <tr><td>运行轴控制</td><td>手动模式下控制 X/Y/Z/A/C 各轴点动</td></tr>
+    <tr><td>程序启停</td><td>启动、暂停、停止当前加工程序</td></tr>
+    <tr><td>复位</td><td>清除报警，复位系统至初始状态</td></tr>
+    <tr><td>I/O 控制</td><td>控制冷却、照明、气吹等辅助功能</td></tr>
+    <tr><td>手轮接口</td><td>连接电子手轮，实现微米级手动进给</td></tr>
+</table>
+
+<h2>四、加工前准备</h2>
+
+<h3>4.1 装夹工件</h3>
+<p>使用高精度自定心夹具工作台，实现快速装夹：</p>
+<ol>
+    <li>清理工作台与夹具定位面，确保无切屑、无毛刺。</li>
+    <li>将工件放入自定心夹具，轻推至定位基准。</li>
+    <li>锁紧夹具手柄，确认工件牢固且无晃动。</li>
+    <li>检查刀具与夹具、工件之间是否有干涉。</li>
+</ol>
+
+<h3>4.2 安装刀具</h3>
+<p>机器支持隐藏式 6 工位自动换刀：</p>
+<ol>
+    <li>打开刀库护罩，按刀位号依次装入刀具。</li>
+    <li>使用拉钉或弹簧夹头锁紧刀柄，确保刀柄锥面清洁。</li>
+    <li>执行<strong>自动对刀</strong>：系统通过高精度对刀仪自动测量各刀具长度，补偿至坐标系。</li>
+</ol>
+
+<div class="alert alert-warning">
+    <div class="alert-icon">💡</div>
+    <div>
+        <strong>提示：</strong>尽量缩短刀具悬伸长度以提高刚性。精加工时优先保证刀具锋利与系统刚性，而非盲目提高进给速度。
+    </div>
+</div>
+
+<h3>4.3 自动轴线标定（强烈推荐）</h3>
+<p>XM-100 支持全自动轴线标定，约 5 分钟完成：</p>
+<ol>
+    <li>将标定球安装至工作台中心。</li>
+    <li>在系统中选择「自动标定」程序。</li>
+    <li>机器以预设路径触发测头对标准球进行多点测量，实时采集几何偏差并自动补偿。</li>
+    <li>标定完成后，系统提示精度恢复，即可进入加工。</li>
+</ol>
+
+<h2>五、两种典型工作流程</h2>
+
+<div class="flow-box">
+    <div class="flow-title">路线 A：快速上手（逆向/创客路线）</div>
+    <p>适合实物复刻、快速创意验证、无 CAD 基础用户。</p>
+    <p><span class="tag tag-blue">3D扫描</span> <span class="tag tag-blue">STL模型</span> <span class="tag tag-green">XMaker自动编程</span> <span class="tag tag-orange">仿真</span> <span class="tag tag-orange">上机</span></p>
+    <ol>
+        <li>使用 XScanner 对实物扫描，生成 STL 格式三维模型。</li>
+        <li>将 STL 导入 XMaker，系统自动识别特征并生成五轴刀路。</li>
+        <li>在 XMaker 中运行刀路仿真，检查碰撞与异常。</li>
+        <li>一键导出 G 代码，传输至 Xmachine。</li>
+        <li>装夹工件 → 自动对刀 → 启动加工。</li>
+    </ol>
+</div>
+
+<div class="flow-box">
+    <div class="flow-title">路线 B：精密可控（工程设计路线）</div>
+    <p>适合从零设计、严格控制公差与表面质量的工程师与科研人员。</p>
+    <p><span class="tag tag-blue">CAD建模</span> <span class="tag tag-blue">STEP/IGES</span> <span class="tag tag-green">专业CAM</span> <span class="tag tag-orange">后处理</span> <span class="tag tag-orange">仿真</span> <span class="tag tag-orange">上机</span></p>
+    <ol>
+        <li>在 SolidWorks / CATIA 等软件中完成零件设计，导出 STEP 或 IGES。</li>
+        <li>导入 SolidCAM / Mastercam 等专业 CAM 进行五轴编程，生成标准 G 代码（需使用 Xmachine 专用后处理器）。</li>
+        <li>在 CAM 或机床仿真软件中验证刀路。</li>
+        <li>通过 U 盘或网络将 G 代码传输至 Xmachine。</li>
+        <li>使用无线测头自动分中与轴线标定，启动加工。</li>
+    </ol>
+</div>
+
+<h2>六、常用材料与推荐参数</h2>
+
+<div class="material-grid">
+    <div class="material-item">铝合金</div>
+    <div class="material-item">黄铜</div>
+    <div class="material-item">铜</div>
+    <div class="material-item">亚克力</div>
+    <div class="material-item">聚碳酸酯(PC)</div>
+    <div class="material-item">木材</div>
+    <div class="material-item">蜡</div>
+    <div class="material-item">玉石/大理石</div>
+    <div class="material-item">黑曜石</div>
+</div>
+
+<table>
+    <tr><th>材料</th><th>主轴转速 (rpm)</th><th>进给速度 (mm/min)</th><th>切深 (mm)</th><th>备注</th></tr>
+    <tr><td>铝合金 6061</td><td>12,000–16,000</td><td>800–1,500</td><td>0.5–2.0</td><td>推荐动态铣策略，注意排屑</td></tr>
+    <tr><td>黄铜</td><td>10,000–14,000</td><td>600–1,200</td><td>0.3–1.5</td><td>注意积屑瘤，可适当提高转速</td></tr>
+    <tr><td>亚克力</td><td>18,000</td><td>2,000–3,000</td><td>0.5–1.0</td><td>高转速低进给防熔融</td></tr>
+    <tr><td>木材</td><td>14,000–18,000</td><td>2,000–4,000</td><td>1–3</td><td>注意木纹方向，防崩边</td></tr>
+    <tr><td>蜡</td><td>12,000–16,000</td><td>1,500–2,500</td><td>1–3</td><td>适合首饰、牙科模型</td></tr>
+</table>
+
+<div class="alert alert-info">
+    <div class="alert-icon">📌</div>
+    <div>
+        <strong>参数原则：</strong>正式批量加工前务必试切；出现振刀/异响时及时调整；精加工阶段优先保表面质量，不要盲目提速。
+    </div>
+</div>
+
+<h2>七、加工操作步骤</h2>
+
+<div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+        <h4>导入程序</h4>
+        <p>将 G 代码文件（.nc / .tap）通过 U 盘或网络传输至机床控制系统，加载到主界面程序列表。</p>
+    </div>
+</div>
+
+<div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+        <h4>设定工件坐标系</h4>
+        <p>使用无线测头或手动对刀，确定工件原点（通常设在上表面中心或左下角）。五轴加工建议执行自动分中，确保旋转轴中心与工件几何中心对齐。</p>
+    </div>
+</div>
+
+<div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">
+        <h4>仿真与空运行</h4>
+        <p>首次运行新程序时，建议先进行<strong>空运行</strong>（Z轴抬高或关闭主轴），观察各轴运动轨迹是否正常，确认无异常碰撞风险。</p>
+    </div>
+</div>
+
+<div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content">
+        <h4>启动加工</h4>
+        <p>关闭防护门，确认冷却液/喷雾已开启（如需要）。按下「循环启动」，观察首刀切削状态。通过内置摄像头可实时远程监控加工过程。</p>
+    </div>
+</div>
+
+<div class="step">
+    <div class="step-num">5</div>
+    <div class="step-content">
+        <h4>过程监控</h4>
+        <p>注意听主轴声音与切削声是否平稳；观察切屑颜色（铝合金应为银白色，若发蓝则温度过高）；通过倍率旋钮可实时微调进给与转速。</p>
+    </div>
+</div>
+
+<div class="step">
+    <div class="step-num">6</div>
+    <div class="step-content">
+        <h4>完工与清理</h4>
+        <p>程序结束后，主轴自动停止并抬刀。待完全停止后打开防护门，使用气吹或毛刷清理切屑，取出工件。检查尺寸与表面质量，记录加工参数供后续优化。</p>
+    </div>
+</div>
+
+<h2>八、日常维护与保养</h2>
+
+<div class="two-col">
+    <div>
+        <h3>每日维护</h3>
+        <ul>
+            <li>清理工作台、导轨与夹具上的切屑</li>
+            <li>检查润滑油位，必要时补充</li>
+            <li>擦拭防护门玻璃与摄像头镜片</li>
+            <li>检查刀具磨损情况</li>
+        </ul>
+    </div>
+    <div>
+        <h3>每周维护</h3>
+        <ul>
+            <li>检查各轴传动皮带/联轴器张紧度</li>
+            <li>清理丝杆与导轨防护罩内积屑</li>
+            <li>检查电气柜散热风扇运转</li>
+            <li>紧固外露螺栓</li>
+        </ul>
+    </div>
+</div>
+
+<h3>每月/定期维护</h3>
+<ul>
+    <li>检查伺服电机与编码器信号是否正常</li>
+    <li>重新执行一次自动轴线标定，确保精度</li>
+    <li>检查直线导轨与滚珠丝杆润滑状态，按需注脂</li>
+    <li>备份系统参数与加工程序</li>
+    <li>根据使用强度，每 1–2 年评估更换磨损导轨与丝杆</li>
+</ul>
+
+<div class="alert alert-warning">
+    <div class="alert-icon">🔧</div>
+    <div>
+        <strong>延长寿命建议：</strong>避免主轴长时间超负荷运行；保证机房通风散热；定期升级控制系统固件；加工金属时建议配备喷雾冷却或气吹装置。
+    </div>
+</div>
+
+<h2>九、常见问题速查</h2>
+
+<table>
+    <tr><th>问题现象</th><th>可能原因</th><th>解决方法</th></tr>
+    <tr><td>开机报警「伺服未就绪」</td><td>急停未释放 / 电源异常</td><td>检查急停按钮；重启电源</td></tr>
+    <tr><td>自动换刀失败</td><td>刀柄未锁紧 / 刀号错误</td><td>重新装刀；检查刀库数据</td></tr>
+    <tr><td>加工表面有振纹</td><td>刀具悬伸过长 / 转速进给不匹配</td><td>缩短悬伸；降低切深或调整转速</td></tr>
+    <tr><td>尺寸超差</td><td>未标定 / 工件未夹紧</td><td>重新自动标定；检查夹具</td></tr>
+    <tr><td>程序运行中停机</td><td>碰撞保护 / 程序错误</td><td>检查仿真；排查 G 代码语法</td></tr>
+    <tr><td>主轴异响</td><td>轴承磨损 / 刀具不平衡</td><td>停机检查；更换刀具或报修</td></tr>
+</table>
+
+<h2>十、技术支持与资源</h2>
+<ul>
+    <li><strong>官方文档：</strong>用户手册、快速入门指南、后处理器文件可在 Xhorse3D 官网或 Maker3D 下载。</li>
+    <li><strong>软件升级：</strong>XMaker 与仿真软件提供免费升级服务。</li>
+    <li><strong>技术支持：</strong>工作日 9:00–18:00 (GMT+8) 可通过官网留言或邮件联系。</li>
+    <li><strong>社区资源：</strong>关注 XMakerHub 社区，获取项目案例、参数分享与进阶教程。</li>
+</ul>
+
+<div class="footer">
+    <p>本指南基于 Xmachine XM-100 / WM-100 公开技术资料整理，仅供教学与操作参考。</p>
+    <p>具体操作请以官方最新用户手册为准。</p>
+</div>
+
+</div>
+</body>
+</html>

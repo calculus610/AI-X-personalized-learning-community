@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Phase 4 Tactile Feedback Integration and Tactile Interaction Reality</title>
+  <style>
+    :root { --bg:#f6f8fb; --card:#fff; --ink:#172033; --muted:#667085; --brand:#7c3aed; --brand2:#00a884; --line:#d8dee9; --soft:#f3edff; --warn:#fff7e6; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif; color:var(--ink); background:linear-gradient(180deg,#f1eaff 0%,var(--bg) 360px); line-height:1.55; }
+    header, main { max-width:1100px; margin:0 auto; }
+    header { padding:56px 24px 28px; } main { padding:0 24px 56px; }
+    .badge { display:inline-block; padding:6px 12px; border-radius:999px; background:rgba(124,58,237,.12); color:var(--brand); font-weight:700; font-size:14px; letter-spacing:.02em; }
+    h1 { margin:18px 0 12px; font-size:clamp(34px,5vw,64px); line-height:1.02; letter-spacing:-.04em; }
+    .subtitle { max-width:840px; color:var(--muted); font-size:20px; margin:0; }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; margin-top:24px; }
+    .grid.three { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:24px; box-shadow:0 12px 30px rgba(23,32,51,.07); }
+    .card h2,.card h3 { margin-top:0; }
+    .lesson { border-top:5px solid var(--brand); }
+    .lesson:nth-child(2) { border-top-color:var(--brand2); }
+    .lesson:nth-child(3) { border-top-color:#f97316; }
+    .lesson:nth-child(4) { border-top-color:#1f6feb; }
+    .lesson:nth-child(5) { border-top-color:#db2777; }
+    .meta { color:var(--muted); font-size:14px; margin-bottom:12px; text-transform:uppercase; letter-spacing:.08em; font-weight:700; }
+    ul { padding-left:22px; } li { margin:7px 0; }
+    .outcome { background:var(--soft); border-radius:14px; padding:14px 16px; margin-top:16px; font-weight:700; }
+    .flow { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-top:18px; }
+    .step { background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px; text-align:center; font-weight:700; }
+    .step span { display:block; color:var(--brand); font-size:26px; margin-bottom:6px; }
+    table { width:100%; border-collapse:collapse; overflow:hidden; border-radius:14px; margin-top:12px; }
+    th,td { text-align:left; border-bottom:1px solid var(--line); padding:12px 14px; vertical-align:top; }
+    th { background:#f0f4f9; font-size:14px; }
+    code { background:#f2f4f7; border:1px solid #e4e7ec; border-radius:6px; padding:2px 6px; font-family:Consolas,"Courier New",monospace; font-size:.92em; }
+    .notice { background:var(--warn); border:1px solid #ffd591; border-radius:18px; padding:18px 20px; margin-top:18px; }
+    .links a { display:inline-block; margin:6px 8px 6px 0; padding:9px 12px; border-radius:10px; background:#f3edff; color:#5b21b6; text-decoration:none; font-weight:700; }
+    footer { color:var(--muted); text-align:center; padding:24px; border-top:1px solid var(--line); }
+    @media (max-width:900px) { .grid.three,.flow { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width:760px) { .grid,.grid.three,.flow { grid-template-columns:1fr; } header { padding-top:36px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="badge">Phase 4 · Tactile Feedback · Tactile Interaction Reality</div>
+    <h1>Tactile feedback integration and tactile interaction reality</h1>
+    <h2 style="margin:0 0 12px;font-size:28px;letter-spacing:-0.02em;">触觉反馈集成，触觉交互现实</h2>
+    <p class="subtitle">Students turn digital commands into physical feedback through screens, touch, lights, sound, vibration, servos, motors, wireless control, and intelligent car behavior.</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Lecture introduction</h2>
+      <h3>中文课程简介</h3>
+      <p>本课程主题是“触觉反馈集成，触觉交互现实”。学生把屏幕、触摸、灯光、蜂鸣器、震动、电机、舵机和小车运动整合起来，让数字指令变成可触摸、可感知、可执行的真实交互。</p>
+      <p>Students progress from touch menus and feedback outputs to wireless commands, motor/servo motion, remote cars, and intelligent pathfinding. The focus is turning interaction logic into physical, perceivable feedback and action.</p>
+      <div class="flow" aria-label="learning flow">
+        <div class="step"><span>1</span>Touch surface</div>
+        <div class="step"><span>2</span>Feedback output</div>
+        <div class="step"><span>3</span>Motion feedback</div>
+        <div class="step"><span>4</span>Remote action</div>
+        <div class="step"><span>5</span>Tactile reality</div>
+      </div>
+    </section>
+
+    <section class="grid three">
+      <article class="card lesson"><div class="meta">Day 1</div><h2>Screen layout and touch menu</h2><p>Students design a screen layout and touch menu control. If no touchscreen is available, buttons can simulate menu input.</p><h3>Topics</h3><ul><li>Screen layout</li><li>Touch feedback</li><li>Menu state</li><li>Short/long press fallback</li><li>AI screen layout prompts</li></ul><div class="outcome">Outcome: touch menu control prototype.</div></article>
+      <article class="card lesson"><div class="meta">Day 2</div><h2>Bluetooth/Wi-Fi light control</h2><p>Students design wireless command formats and control lights through Bluetooth, with Wi-Fi as an extension.</p><h3>Topics</h3><ul><li>Bluetooth commands</li><li>Wi-Fi web control</li><li>LED/light feedback</li><li>Communication data design</li><li>AI-assisted command design</li></ul><div class="outcome">Outcome: Bluetooth light control.</div></article>
+      <article class="card lesson"><div class="meta">Day 3</div><h2>Car motor and servo control</h2><p>Students learn DC motor, motor driver, PWM, servo angle, and car motion functions.</p><h3>Topics</h3><ul><li>DC motor</li><li>Motor driver</li><li>PWM speed</li><li>Servo control</li><li>Car motion program</li></ul><div class="outcome">Outcome: car motion program.</div></article>
+      <article class="card lesson"><div class="meta">Day 4</div><h2>Bluetooth remote car</h2><p>Students control car motors through Bluetooth and design safe AI-assisted motor decisions.</p><h3>Topics</h3><ul><li>Bluetooth command set</li><li>Car action functions</li><li>Safety stop</li><li>Wi-Fi extension</li><li>AI motor decision rules</li></ul><div class="outcome">Outcome: remote-controlled car.</div></article>
+      <article class="card lesson"><div class="meta">Day 5</div><h2>AI pathfinding car</h2><p>Students map AI tags, sensor states, or classification labels to motor and servo responses for pathfinding.</p><h3>Topics</h3><ul><li>AI tag / label</li><li>Manual/auto mode</li><li>Sensor-triggered control</li><li>Pathfinding rules</li><li>Final smart car demo</li></ul><div class="outcome">Outcome: intelligent pathfinding car.</div></article>
+    </section>
+
+    <section class="card">
+      <h2>Lab map</h2>
+      <table><thead><tr><th>Day</th><th>Folder</th><th>Lab</th><th>Purpose</th></tr></thead><tbody>
+        <tr><td>Day 1</td><td><code>day1-screen-touch-menu/labs/01-button-input</code></td><td>Button Input</td><td>Use button as fallback menu input.</td></tr>
+        <tr><td>Day 1</td><td><code>day1-screen-touch-menu/labs/02-touch-toggle</code></td><td>Touch Toggle</td><td>Use touch/touch sensor to change menu state.</td></tr>
+        <tr><td>Day 2</td><td><code>day2-bluetooth-wifi-light-control/labs/05-bluetooth-light-control</code></td><td>Bluetooth Light</td><td>Control lights through Bluetooth commands.</td></tr>
+        <tr><td>Day 2</td><td><code>day2-bluetooth-wifi-light-control/labs/06-wifi-light-control</code></td><td>Wi-Fi Light</td><td>Control lights from a browser web page.</td></tr>
+        <tr><td>Day 3</td><td><code>day3-car-motor-servo-control/labs/05-car-motion-program</code></td><td>Car Motion</td><td>Build car motion functions with motors and servo.</td></tr>
+        <tr><td>Day 4</td><td><code>day4-bluetooth-remote-car/labs/03-bluetooth-car-control</code></td><td>Bluetooth Car</td><td>Control the car with F/B/L/R/S commands.</td></tr>
+        <tr><td>Day 4</td><td><code>day4-bluetooth-remote-car/labs/04-wifi-web-car-control</code></td><td>Wi-Fi Car</td><td>Control the car from a phone browser.</td></tr>
+        <tr><td>Day 5</td><td><code>day5-ai-pathfinding-car/labs/05-intelligent-pathfinding-project</code></td><td>Pathfinding</td><td>Build the final intelligent pathfinding car.</td></tr>
+      </tbody></table>
+    </section>
+
+    <section class="grid">
+      <article class="card"><h2>Hardware checklist</h2><ul><li>ESP32-S3 / ESP32 development board</li><li>Separate touchscreen module for real touch input</li><li>LED or LED strip for light control</li><li>Bluetooth/Wi-Fi capable ESP32 board</li><li>Two-wheel car chassis, DC motors, motor driver</li><li>Servo motor</li><li>Ultrasonic sensor for pathfinding</li><li>Battery pack or external motor power</li></ul></article>
+      <article class="card"><h2>Software checklist</h2><ul><li>Arduino IDE installed</li><li>ESP32 board package installed</li><li>Serial Monitor works at 115200 baud</li><li>BluetoothSerial or BLE support for selected board</li><li>Wi-Fi web server examples available</li><li>No real Wi-Fi credentials committed to GitHub</li></ul></article>
+    </section>
+
+    <section class="card">
+      <h2>How to use this folder</h2><h3>如何使用本文件夹</h3>
+      <ol><li>Open this <code>index.html</code> first to understand the course structure.</li><li>Read <code>README.md</code> for the overall learning path.</li><li>Go to each day folder and follow the lab README files.</li><li>Open each <code>.ino</code> file in Arduino IDE.</li><li>Test each module alone before combining it into the car project.</li><li>Submit final code, lab report, and evidence files in the <code>outputs/</code> folder.</li></ol>
+      <div class="links"><a href="README.md">Open main README</a><a href="day1-screen-touch-menu/README.md">Open Day 1</a><a href="day2-bluetooth-wifi-light-control/README.md">Open Day 2</a><a href="day3-car-motor-servo-control/README.md">Open Day 3</a><a href="day4-bluetooth-remote-car/README.md">Open Day 4</a><a href="day5-ai-pathfinding-car/README.md">Open Day 5</a><a href="outputs/README.md">Open outputs guide</a><a href="resources/hardware-list.md">Open hardware list</a><a href="resources/pin-map-template.md">Open pin map template</a><a href="resources/troubleshooting.md">Open troubleshooting guide</a><a href="resources/difficulty-levels.md">Open difficulty levels</a></div>
+      <div class="notice"><strong>Teaching note / 教学提示:</strong> Frame every activity as tactile feedback integration: user input becomes visible, audible, vibrating, moving, or navigational feedback in the real world.</div>
+    </section>
+  </main>
+  <footer>Smart Hardware Learning · Phase 4 · AI and Multi-Sensor Advanced Development</footer>
+</body>
+</html>

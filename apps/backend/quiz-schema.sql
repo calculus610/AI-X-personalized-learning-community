@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS adaptive_quiz_sessions (
+  id CHAR(36) NOT NULL PRIMARY KEY,
+  user_id CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  track_id CHAR(36) NOT NULL,
+  route_step_id CHAR(36) NOT NULL,
+  course_id VARCHAR(64) NOT NULL,
+  lesson_id BIGINT NULL,
+  phase_id VARCHAR(64) NULL,
+  source VARCHAR(64) NOT NULL DEFAULT 'course_rule',
+  status VARCHAR(32) NOT NULL DEFAULT 'GENERATED',
+  title VARCHAR(500) NOT NULL,
+  question_count INT UNSIGNED NOT NULL DEFAULT 10,
+  context_json JSON NOT NULL,
+  questions_json JSON NOT NULL,
+  report_json JSON NULL,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  submitted_at DATETIME(3) NULL,
+  INDEX idx_adaptive_quiz_sessions_context (user_id, track_id, route_step_id, created_at),
+  INDEX idx_adaptive_quiz_sessions_course (user_id, course_id, created_at),
+  CONSTRAINT fk_adaptive_quiz_sessions_user FOREIGN KEY (user_id) REFERENCES users(id),
+  CONSTRAINT fk_adaptive_quiz_sessions_track FOREIGN KEY (track_id) REFERENCES learning_tracks(id),
+  CONSTRAINT fk_adaptive_quiz_sessions_node FOREIGN KEY (route_step_id) REFERENCES learning_path_nodes(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
