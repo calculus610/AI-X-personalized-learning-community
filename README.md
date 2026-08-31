@@ -7,6 +7,7 @@
 
 <p align="center">
   <a href="README_EN.md">English</a> ·
+  <a href="https://xiaoyu8758.github.io/AI-X-personalized-learning-platform/">项目展示与团队</a> ·
   <a href="docs/getting-started.zh-CN.md">完整安装指南</a> ·
   <a href="docs/configuration.zh-CN.md">配置与 API Key</a> ·
   <a href="CONTRIBUTING.md">参与贡献</a>
@@ -20,6 +21,16 @@
 </p>
 
 ![AI-X 个性化学习平台登录页](assets/screenshots/sign-in.jpg)
+
+## 项目展示与团队
+
+AI-X 不只是一份可以在本地运行的开源代码，也是一项围绕个性化学习、智能导师与可信学习证据展开的教学创新实践。
+
+在项目展示页中，你可以了解课程背景、整体方案、系统架构、团队成员与分工，以及从构想到落地的阶段性成果。
+
+**[查看 AI-X 项目展示页 →](https://xiaoyu8758.github.io/AI-X-personalized-learning-platform/)**
+
+**[认识项目团队 →](https://xiaoyu8758.github.io/AI-X-personalized-learning-platform/#team)**
 
 ## 学习，不必从目录开始
 
