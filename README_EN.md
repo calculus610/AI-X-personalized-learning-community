@@ -7,6 +7,7 @@
 
 <p align="center">
   <a href="README.md">中文</a> ·
+  <a href="https://xiaoyu8758.github.io/AI-X-personalized-learning-platform/">Project showcase &amp; team</a> ·
   <a href="docs/getting-started.en.md">Full setup guide</a> ·
   <a href="docs/configuration.en.md">Configuration and API keys</a> ·
   <a href="CONTRIBUTING.md">Contributing</a>
@@ -20,6 +21,16 @@
 </p>
 
 ![AI-X Personalized Learning sign-in screen](assets/screenshots/sign-in.jpg)
+
+## Project showcase and team
+
+AI-X is more than a locally runnable open-source codebase. It is an educational innovation project exploring personalized learning, AI mentorship, and trustworthy learning evidence.
+
+Visit the project showcase to learn about the educational context, overall solution, system architecture, team responsibilities, and milestones from concept to implementation.
+
+**[Explore the AI-X project →](https://xiaoyu8758.github.io/AI-X-personalized-learning-platform/)**
+
+**[Meet the team →](https://xiaoyu8758.github.io/AI-X-personalized-learning-platform/#team)**
 
 ## Learning does not have to begin with a catalogue
 
